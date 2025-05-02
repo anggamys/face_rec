@@ -1,34 +1,28 @@
 <?php
-// components/auth.php
-session_start();
+session_start(); // Penting! Pastikan ini ada di awal
 
 function require_login()
 {
-    if (!isset($_SESSION["user"])) {
-        header("Location: login.php");
+    if (!isset($_SESSION['user'])) {
+        header("Location: /login.php");
         exit();
     }
 }
 
-function require_role($allowedRoles)
+function require_role($role)
 {
-    require_login();
+    require_login(); // Jaga-jaga kalau belum login
 
-    $userRole = $_SESSION["user"]["role"];
-
-    if (!in_array($userRole, (array) $allowedRoles)) {
-        // Redirect ke dashboard sesuai role
-        switch ($userRole) {
-            case "dosen":
-                header("Location: dashboard_dosen.php");
-                break;
-            case "mahasiswa":
-                header("Location: dashboard.php");
-                break;
-            default:
-                header("Location: login.php");
-                break;
+    if ($_SESSION['user']['role'] !== $role) {
+        // Redirect ke halaman yang sesuai dengan role mereka
+        if ($_SESSION['user']['role'] === 'dosen') {
+            header("Location: /dashboard_dosen.php");
+        } elseif ($_SESSION['user']['role'] === 'mahasiswa') {
+            header("Location: /dashboard.php");
+        } else {
+            header("Location: /login.php");
         }
         exit();
     }
+    // Kalau role sesuai, lanjut aja tanpa redirect
 }

@@ -4,13 +4,13 @@ $currentPage = "home";
 include "./components/header.php";
 ?>
 
+<?php include "./components/navbar.php"; ?>
+
 <!-- Page content here -->
 <section class="hero-section text-center">
     <div class="container">
-        <h1>Welcome to Entry System</h1>
-        <p>Manage secure entries easily.</p>
+        <h1>Welcome to Presensi App</h1>
     </div>
 </section>
 
-<?php include "./components/footer.php";
-?>
+<?php include "./components/footer.php"; ?>

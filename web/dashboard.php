@@ -1,47 +1,48 @@
 <?php
 require_once "./auth_check.php";
-require_role("mahasiswa");
 
-$user = $_SESSION["user"];
+$user = $_SESSION["user"] ?? null;
+
+if (!$user) {
+    header("Location: /login.php");
+    exit;
+}
+
+$role = $user["role"] ?? "guest";
+
+// Konfigurasi berdasarkan role
+if ($role === "mahasiswa") {
+    $pageTitle = "Dashboard Mahasiswa";
+    $currentPage = "dashboard-mahasiswa";
+    $metaDescription = "Dashboard untuk mahasiswa";
+    $welcomeText = "Selamat datang di Dashboard Mahasiswa";
+    $buttonLink = "/presensi";
+    $buttonText = "Mulai Presensi";
+} elseif ($role === "dosen") {
+    $pageTitle = "Dashboard Dosen";
+    $currentPage = "dashboard-dosen";
+    $metaDescription = "Dashboard untuk dosen";
+    $welcomeText = "Selamat datang di Dashboard Dosen";
+    $buttonLink = "/mata-kuliah";
+    $buttonText = "Kelola Mata Kuliah";
+} else {
+    // Role tidak dikenali, redirect
+    header("Location: /unauthorized.php");
+    exit;
+}
+
+include_once "./components/header.php";
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="style.css" rel="stylesheet">
-</head>
-<body>
+<div class="d-flex">
+    <?php include_once "./components/sidebar.php"; ?>
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <h4 class="text-center mt-3">Presensi App</h4>
-  <a href="dashboard.php"><i class="bi bi-house-door-fill"></i> <span>Dashboard</span></a>
-  <a href="#"><i class="bi bi-calendar-check-fill"></i> <span>Presensi</span></a>
-  <a href="#"><i class="bi bi-person-lines-fill"></i> <span>Profil</span></a>
-  <a href="logout.php"><i class="bi bi-box-arrow-right"></i> <span>Logout</span></a>
-</div>
-
-<!-- Main Content -->
-<div class="content">
-  <div class="container">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h4>Selamat datang, <?= htmlspecialchars($user["name"]) ?></h4>
-        <p><strong>Email:</strong> <?= htmlspecialchars($user["email"]) ?></p>
-        <p><strong>Role:</strong> <?= htmlspecialchars($user["role"]) ?></p>
-        <?php if ($user["role"] === "mahasiswa"): ?>
-          <p><strong>NRP:</strong> <?= htmlspecialchars($user["nrp"]) ?></p>
-        <?php elseif ($user["role"] === "dosen"): ?>
-          <p><strong>NIP:</strong> <?= htmlspecialchars($user["nip"]) ?></p>
-        <?php endif; ?>
-      </div>
+    <div class="content flex-grow-1 p-4">
+        <div class="container">
+            <h2 class="mb-4"><?= $pageTitle; ?></h2>
+            <p><?= $welcomeText; ?></p>
+        </div>
     </div>
-  </div>
 </div>
 
-</body>
-</html>
+<?php include_once "./components/footer.php"; ?>
