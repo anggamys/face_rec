@@ -1,13 +1,8 @@
 <?php
-session_start();
+require_once "./auth_check.php";
+require_role("mahasiswa");
 
-if (!isset($_SESSION['token']) || !isset($_SESSION['user'])) {
-    header('Location: login.php');
-    exit();
-}
-
-$user = $_SESSION['user'];
-
+$user = $_SESSION["user"];
 ?>
 
 <!DOCTYPE html>
@@ -35,13 +30,13 @@ $user = $_SESSION['user'];
   <div class="container">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h4>Selamat datang, <?= htmlspecialchars($user['name']) ?></h4>
-        <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
-        <p><strong>Role:</strong> <?= htmlspecialchars($user['role']) ?></p>
-        <?php if ($user['role'] === 'mahasiswa'): ?>
-          <p><strong>NRP:</strong> <?= htmlspecialchars($user['nrp']) ?></p>
-        <?php elseif ($user['role'] === 'dosen'): ?>
-          <p><strong>NIP:</strong> <?= htmlspecialchars($user['nip']) ?></p>
+        <h4>Selamat datang, <?= htmlspecialchars($user["name"]) ?></h4>
+        <p><strong>Email:</strong> <?= htmlspecialchars($user["email"]) ?></p>
+        <p><strong>Role:</strong> <?= htmlspecialchars($user["role"]) ?></p>
+        <?php if ($user["role"] === "mahasiswa"): ?>
+          <p><strong>NRP:</strong> <?= htmlspecialchars($user["nrp"]) ?></p>
+        <?php elseif ($user["role"] === "dosen"): ?>
+          <p><strong>NIP:</strong> <?= htmlspecialchars($user["nip"]) ?></p>
         <?php endif; ?>
       </div>
     </div>

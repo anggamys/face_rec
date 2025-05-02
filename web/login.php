@@ -1,21 +1,24 @@
 <?php
-session_start();
+ob_start();
 
-$error = '';
+$pageTitle = "Login";
+$currentPage = "login";
+include "./components/header.php";
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+// Inisialisasi error
+$error = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $data = [
-        'email' => $_POST['email'],
-        'password' => $_POST['password']
+        "email" => $_POST["email"],
+        "password" => $_POST["password"],
     ];
 
-    $ch = curl_init('http://localhost:8000/auth/login'); // Ganti dengan URL API login kamu
+    $ch = curl_init("http://localhost:8000/auth/login"); // Ganti sesuai URL backend
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json'
-    ]);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -23,60 +26,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $result = json_decode($response, true);
 
-    if ($httpCode == 200 && isset($result['access_token'])) {
-        // Simpan token dan data user ke session
-        $_SESSION['token'] = $result['access_token'];
-        $_SESSION['user'] = $result['user'] ?? null;
+    if ($httpCode === 200 && isset($result["access_token"])) {
+        $_SESSION["token"] = $result["access_token"];
+        $_SESSION["user"] = $result["user"] ?? null;
 
-        // Arahkan ke dashboard berdasarkan role
-        if ($_SESSION['user']['role'] == 'dosen') {
-            header('Location: dashboard_dosen.php'); // Arahkan ke dashboard dosen
+        if ($_SESSION["user"]["role"] === "dosen") {
+            header("Location: dashboard_dosen.php");
         } else {
-            header('Location: dashboard.php'); // Arahkan ke dashboard mahasiswa
+            header("Location: dashboard.php");
         }
         exit();
     } else {
-        // Menampilkan error jika login gagal
-        $error = $result['detail'] ?? 'Login gagal';
+        $error =
+            $result["detail"] ??
+            "Login gagal. Cek kembali email dan password Anda.";
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<!-- Login Form -->
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col-md-4">
+    <div class="col-md-5">
       <div class="card shadow">
         <div class="card-body">
           <h4 class="text-center mb-4">Login</h4>
+
           <?php if (!empty($error)): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+            <div class="alert alert-danger text-center"><?= htmlspecialchars(
+                $error
+            ) ?></div>
           <?php endif; ?>
-          <form method="POST">
+
+          <form method="POST" novalidate>
             <div class="mb-3">
-              <label>Email</label>
-              <input type="email" name="email" class="form-control" required>
+              <label for="email" class="form-label">Email</label>
+              <input type="email" name="email" id="email" class="form-control" required autofocus>
             </div>
             <div class="mb-3">
-              <label>Password</label>
-              <input type="password" name="password" class="form-control" required>
+              <label for="password" class="form-label">Password</label>
+              <input type="password" name="password" id="password" class="form-control" required>
             </div>
             <button class="btn btn-primary w-100" type="submit">Login</button>
           </form>
+
           <div class="mt-3 text-center">
-            <p>Belum punya akun? <a href="register.php">Daftar di sini</a></p>
+            <small>Belum punya akun? <a href="register.php">Daftar di sini</a></small>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-</body>
-</html>
+
+<?php include "./components/footer.php"; ?>

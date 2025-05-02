@@ -1,25 +1,23 @@
 <?php
-session_start();
-$error = '';
-$success = '';
+ob_start();
+$error = "";
+$success = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data = [
-        "name" => $_POST['name'],
-        "email" => $_POST['email'],
-        "password" => $_POST['password'],
-        "role" => $_POST['role'],
-        "nrp" => $_POST['role'] === 'mahasiswa' ? (int)$_POST['nrp'] : null, // Mengubah NRP menjadi null jika role bukan mahasiswa
-        "nip" => $_POST['role'] === 'dosen' ? (int)$_POST['nip'] : null  // Mengubah NIP menjadi null jika role bukan dosen
+        "name" => $_POST["name"],
+        "email" => $_POST["email"],
+        "password" => $_POST["password"],
+        "role" => $_POST["role"],
+        "nrp" => $_POST["role"] === "mahasiswa" ? (int) $_POST["nrp"] : null, // Mengubah NRP menjadi null jika role bukan mahasiswa
+        "nip" => $_POST["role"] === "dosen" ? (int) $_POST["nip"] : null, // Mengubah NIP menjadi null jika role bukan dosen
     ];
 
-    $ch = curl_init('http://localhost:8000/auth/register');
+    $ch = curl_init("http://localhost:8000/auth/register");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json'
-    ]);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -29,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $success = "Registrasi berhasil. Silakan login.";
     } else {
         $res = json_decode($response, true);
-        $error = $res['detail'] ?? 'Registrasi gagal. Coba lagi.';
+        $error = $res["detail"] ?? "Registrasi gagal. Coba lagi.";
     }
 }
 ?>
@@ -50,10 +48,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <h3 class="mb-4">Register Akun</h3>
 
           <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+            <div class="alert alert-danger"><?= htmlspecialchars(
+                $error
+            ) ?></div>
           <?php endif; ?>
           <?php if ($success): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+            <div class="alert alert-success"><?= htmlspecialchars(
+                $success
+            ) ?></div>
           <?php endif; ?>
 
           <form method="POST">
