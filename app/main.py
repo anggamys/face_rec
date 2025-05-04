@@ -7,9 +7,11 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(auth.router)
-app.include_router(matakuliah.router)
 app.include_router(absen.router)
+app.include_router(auth.router)
+app.include_router(jadwal.router)
+app.include_router(kelas.router)
+app.include_router(matakuliah.router)
 app.include_router(mahasiswa.router)
 
 if __name__ == "__main__":

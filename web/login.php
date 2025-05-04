@@ -14,11 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION['token'] = $response['access_token'];
         $_SESSION['user'] = $response['user'];
 
-        if ($_SESSION['user']['role'] === 'dosen') {
-            header("Location: /dashboard_dosen.php");
-        } else {
-            header("Location: /dashboard.php");
-        }
+        header("Location: dashboard.php");
         exit();
     } else {
         $error = "Email atau password salah.";

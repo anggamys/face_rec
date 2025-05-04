@@ -11,18 +11,14 @@ function require_login()
 
 function require_role($role)
 {
-    require_login(); // Jaga-jaga kalau belum login
+    require_login(); // Pastikan user sudah login
 
-    if ($_SESSION['user']['role'] !== $role) {
-        // Redirect ke halaman yang sesuai dengan role mereka
-        if ($_SESSION['user']['role'] === 'dosen') {
-            header("Location: /dashboard_dosen.php");
-        } elseif ($_SESSION['user']['role'] === 'mahasiswa') {
-            header("Location: /dashboard.php");
-        } else {
-            header("Location: /login.php");
-        }
+    // Jika role pengguna sesuai dengan yang dibutuhkan, lanjutkan
+    if ($_SESSION['user']['role'] === $role) {
+        return; // Tidak ada redirect, biarkan akses ke halaman
+    } else {
+        // Jika tidak sesuai, redirect ke halaman login atau halaman tertentu
+        header("Location: /dashboard.php");
         exit();
     }
-    // Kalau role sesuai, lanjut aja tanpa redirect
 }

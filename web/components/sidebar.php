@@ -23,6 +23,11 @@ $user = $_SESSION['user'] ?? null;
                     <i class="bi bi-book me-2"></i> Mata Kuliah
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center <?= strpos($_SERVER['REQUEST_URI'], '/kelas') !== false ? 'active fw-semibold' : '' ?>" href="/kelas">
+                    <i class="bi bi-journal-text me-2"></i> Kelas
+                </a>
+            </li>
         <?php endif; ?>
 
         <li class="nav-item">
