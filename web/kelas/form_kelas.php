@@ -23,18 +23,20 @@ if ($kode_kelas) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kode_kelas_input = trim($_POST['kode_kelas'] ?? '');
     $nama_kelas = trim($_POST['nama_kelas'] ?? '');
-    $id_matkul = trim($_POST['id_matkul'] ?? '');
+    $id_matkul_array = $_POST['id_matkul'] ?? [];
 
-    if ($kode_kelas_input === '' || $nama_kelas === '' || $id_matkul === '') {
+    if ($kode_kelas_input === '' || $nama_kelas === '' || empty($id_matkul_array)) {
         $errorMessage = "Semua field wajib diisi.";
     } else {
+        // Kirim sebagai array atau join jadi string tergantung backend
+        $id_matkul_payload = is_array($id_matkul_array) ? $id_matkul_array : [$id_matkul_array];
+
         if ($kode_kelas && $kelas) {
-            $response = updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul);
+            $response = updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul_payload);
         } else {
-            $response = addKelas($kode_kelas_input, $nama_kelas, $id_matkul);
+            $response = addKelas($kode_kelas_input, $nama_kelas, $id_matkul_payload);
         }
 
-        // Handle response dari action
         if ((is_array($response) && isset($response['success']) && $response['success']) || $response === true) {
             $redirect_action = $kode_kelas ? "updated" : "created";
             header("Location: kelas.php?success=$redirect_action");
@@ -80,29 +82,39 @@ include "../components/header.php";
 
                 <div class="mb-3">
                     <label for="id_matkul" class="form-label">Mata Kuliah</label>
-                    <select class="form-select" id="id_matkul" name="id_matkul" required>
-                        <option value="">Pilih Mata Kuliah</option>
-                        <?php
-                        $mataKuliahList = getAllMataKuliah();
-                        foreach ($mataKuliahList as $matkul):
-                            $selected = '';
+                    <div class="mb-3">
+                        <label class="form-label">Mata Kuliah</label>
+                        <div class="form-check">
+                            <?php
+                            $mataKuliahList = getAllMataKuliah();
+                            $selectedMatkul = [];
+
+                            // Ambil yang sudah terpilih kalau mode edit
                             if (isset($kelas['matakuliah']) && is_array($kelas['matakuliah'])) {
                                 foreach ($kelas['matakuliah'] as $m) {
-                                    if ((is_array($m) && $m['id_matkul'] == $matkul['id_matkul']) || $m == $matkul['id_matkul']) {
-                                        $selected = 'selected';
-                                        break;
-                                    }
+                                    $selectedMatkul[] = is_array($m) ? $m['id_matkul'] : $m;
                                 }
                             }
-                        ?>
-                            <option value="<?= htmlspecialchars($matkul['id_matkul']) ?>" <?= $selected ?>>
-                                <?= htmlspecialchars($matkul['nama_matkul']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
 
+                            foreach ($mataKuliahList as $matkul):
+                                $isChecked = in_array($matkul['id_matkul'], $selectedMatkul) ? 'checked' : '';
+                            ?>
+                                <div class="form-check">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        name="id_matkul[]"
+                                        id="matkul_<?= htmlspecialchars($matkul['id_matkul']) ?>"
+                                        value="<?= htmlspecialchars($matkul['id_matkul']) ?>"
+                                        <?= $isChecked ?>>
+                                    <label class="form-check-label" for="matkul_<?= htmlspecialchars($matkul['id_matkul']) ?>">
+                                        <?= htmlspecialchars($matkul['nama_matkul']) ?>
+                                    </label>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
-
                 <button type="submit" class="btn btn-primary">Simpan</button>
             </form>
         </div>

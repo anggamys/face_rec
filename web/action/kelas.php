@@ -74,20 +74,26 @@ function addKelas($kode_kelas, $nama_kelas, $id_matkul)
 function updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul)
 {
     global $global_url;
+
+    // Pastikan $id_matkul dalam bentuk array
+    $matakuliahArray = is_array($id_matkul) ? $id_matkul : [$id_matkul];
+
     $data = [
         'kode_kelas' => $kode_kelas_input,
         'nama_kelas' => $nama_kelas,
-        'matakuliah' => [$id_matkul]
+        'matakuliah' => $matakuliahArray
     ];
 
     $response = sendRequest("PUT", "$global_url/$kode_kelas", $data);
 
-    if ($response['success']) {
-        return $response; // Jangan return $response['data'] doang
+    if (isset($response['success']) && $response['success']) {
+        return $response; // Tetap kembalikan response utuh
     }
 
-    logError("Failed to update kelas with kode_kelas {$kode_kelas}. Response: " . json_encode($response));
-    return $response; // Tetap return response lengkap (biar bisa dibaca error-nya)
+    // Logging ke terminal untuk debugging
+    error_log("❌ Failed to update kelas with kode_kelas {$kode_kelas}. Response: " . json_encode($response));
+
+    return $response;
 }
 
 function deleteKelas($id)
