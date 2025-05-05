@@ -1,13 +1,10 @@
 <?php
+session_start();
+
 require_once "../auth_check.php";
-require_once "../action/mata-kuliah.php";
+require_once "../../action/mata-kuliah.php";
 
 require_role("dosen");
-
-// Mulai session jika belum aktif
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 $id_matkul = $_GET['id'] ?? null;
 $mataKuliah = null;
@@ -46,11 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include "../components/header.php";
+include "../../components/header.php";
 ?>
 
 <div class="d-flex">
-    <?php include "../components/sidebar.php"; ?>
+    <?php include "../../components/sidebar.php"; ?>
 
     <div class="content flex-grow-1 p-4">
         <div class="container">
@@ -80,4 +77,4 @@ include "../components/header.php";
     </div>
 </div>
 
-<?php include "../components/footer.php"; ?>
+<?php include "../../components/footer.php"; ?>

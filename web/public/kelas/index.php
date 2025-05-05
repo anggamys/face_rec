@@ -1,18 +1,20 @@
 <?php
+session_start();
+
 require_once "../auth_check.php";
-require_once "../action/kelas.php";
-require_once "../action/mata-kuliah.php";
+require_once "../../action/kelas.php";
+require_once "../../action/mata-kuliah.php";
 
 require_role("dosen");
 
 // Ambil semua data kelas
 $kelasList = getAllKelas();
 
-include "../components/header.php";
+include "../../components/header.php";
 ?>
 
 <div class="d-flex">
-    <?php include "../components/sidebar.php"; ?>
+    <?php include "../../components/sidebar.php"; ?>
 
     <div class="content flex-grow-1 p-4">
         <div class="container">
@@ -65,4 +67,4 @@ include "../components/header.php";
     </div>
 </div>
 
-<?php include "../components/footer.php"; ?>
+<?php include "../../components/footer.php"; ?>

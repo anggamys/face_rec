@@ -1,5 +1,4 @@
 <?php
-session_start(); // Penting! Pastikan ini ada di awal
 
 function require_login()
 {

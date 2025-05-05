@@ -1,11 +1,12 @@
 <?php
-require_once "./action/auth.php";
-session_start(); // Pindah ke atas biar konsisten di semua kondisi
+session_start();
+
+require_once "../action/auth.php";
 
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = $_POST['email'];        // Sesuaikan dengan input name di form
+    $email = $_POST['email'];
     $password = $_POST['password'];
 
     $response = login($email, $password);
@@ -21,8 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-include "./components/header.php";
-include "./components/navbar.php";
+include "../components/header.php";
+include "../components/navbar.php";
 ?>
 
 <div class="container mt-5">
@@ -54,4 +55,4 @@ include "./components/navbar.php";
     </div>
 </div>
 
-<?php include "./components/footer.php"; ?>
+<?php include "../components/footer.php"; ?>

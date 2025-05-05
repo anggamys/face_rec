@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 require_once "./auth_check.php";
 
 $user = $_SESSION["user"] ?? null;
@@ -26,16 +28,15 @@ if ($role === "mahasiswa") {
     $buttonLink = "/mata-kuliah";
     $buttonText = "Kelola Mata Kuliah";
 } else {
-    // Role tidak dikenali, redirect
     header("Location: /unauthorized.php");
     exit;
 }
 
-include_once "./components/header.php";
+include_once "../components/header.php";
 ?>
 
 <div class="d-flex">
-    <?php include_once "./components/sidebar.php"; ?>
+    <?php include_once "../components/sidebar.php"; ?>
 
     <div class="content flex-grow-1 p-4">
         <div class="container">
@@ -45,4 +46,4 @@ include_once "./components/header.php";
     </div>
 </div>
 
-<?php include_once "./components/footer.php"; ?>
+<?php include_once "../components/footer.php"; ?>

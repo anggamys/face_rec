@@ -1,32 +1,21 @@
 <?php
-require "./action/auth.php";
+require "../action/auth.php";
 
 if (isset($_POST['register'])) {
   $name = $_POST['name'];
   $email = $_POST['email'];
   $password = $_POST['password'];
 
-  $role = $_POST['role'] ?? 'mahasiswa'; // Default role if not provided
+  $role = $_POST['role'] ?? 'mahasiswa';
   $response = register($name, $email, $password, $role);
 
-  if ($response && isset($response['access_token'])) {
-    session_start();
-    $_SESSION['token'] = $response['access_token'];
-    $_SESSION['user'] = $response['user'];
-
-    if ($_SESSION['user']['role'] == 'dosen') {
-      header("Location: /dashboard_dosen.php");
-    } else {
-      header("Location: /dashboard.php");
-    }
-
+  if ($response) {
+    header("Location: login.php?msg=registered");
     exit();
-  } else {
-    $error = "Registration failed. Please try again.";
   }
 }
-include "./components/header.php";
-include "./components/navbar.php";
+include "../components/header.php";
+include "../components/navbar.php";
 ?>
 
 <div class="container mt-5">
@@ -62,5 +51,5 @@ include "./components/navbar.php";
   </div>
 </div>
 <?php
-include "./components/footer.php";
+include "../components/footer.php";
 ?>

@@ -1,10 +1,10 @@
 <?php
 $pageTitle = "Home";
 $currentPage = "home";
-include "./components/header.php";
+include "../components/header.php";
 ?>
 
-<?php include "./components/navbar.php"; ?>
+<?php include "../components/navbar.php"; ?>
 
 <!-- Hero Section -->
 <section class="hero-section text-center bg-primary text-white d-flex align-items-center justify-content-center" style="height: 100vh;">
@@ -15,4 +15,4 @@ include "./components/header.php";
     </div>
 </section>
 
-<?php include "./components/footer.php"; ?>
+<?php include "../components/footer.php"; ?>

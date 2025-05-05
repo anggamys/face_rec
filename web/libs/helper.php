@@ -2,8 +2,7 @@
 
 function logError($message)
 {
-    // Menampilkan pesan error ke terminal
-    error_log($message);  // Log akan ditampilkan di terminal
+    error_log($message);
 }
 
 function sendRequest($method, $url, $data = null)
