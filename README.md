@@ -74,5 +74,5 @@ _Work in progress..._
 5. Run the PHP server for the frontend.
 
    ```bash
-   php -S localhost:8000 -t web
+   php -S localhost:8000 -t web/public
    ```

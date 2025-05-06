@@ -6,7 +6,7 @@ $pageSpecificCss = $pageSpecificCss ?? "";
 $currentPage = $currentPage ?? "";
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-100">
 
 <head>
   <meta charset="UTF-8" />
@@ -16,11 +16,11 @@ $currentPage = $currentPage ?? "";
   <meta name="robots" content="index, follow" />
   <title><?= htmlspecialchars($pageTitle) ?> - Presensi App</title>
 
-  <!-- Open Graph Meta Tags for social media -->
+  <!-- Open Graph Meta -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>" />
   <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>" />
-  <meta property="og:image" content="path_to_image.jpg" /> <!-- Replace with actual image URL -->
+  <meta property="og:image" content="path_to_image.jpg" />
   <meta property="og:url" content="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>" />
 
   <!-- Bootstrap CSS -->
@@ -30,29 +30,13 @@ $currentPage = $currentPage ?? "";
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 
   <!-- Custom CSS -->
-  <style>
-    body {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-    }
+  <link rel="stylesheet" href="../public/style.css" />
 
-    main {
-      flex: 1;
-    }
-
-    .footer {
-      background-color: #212529;
-      color: #fff;
-      padding: 10px 0;
-      font-size: 14px;
-    }
-  </style>
-
-
-  <?= $customCss ?><?= $pageSpecificCss ?>
-  </style>
+  <?= $customCss ?>
+  <?= $pageSpecificCss ?>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Your page content goes here -->
+  <main class="flex-grow-1">
