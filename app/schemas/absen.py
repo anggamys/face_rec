@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 
 class AbsenBase(BaseModel):
+    id_jadwal: int
+    id_matkul: int
     id_mahasiswa: int
     status: str  # misalnya "hadir" atau "alpha"
 

@@ -18,21 +18,21 @@ def close_session(id_jadwal: int):
 def is_session_open(id_jadwal: int) -> bool:
     return SESSION_STATUS.get(id_jadwal, False)
 
-def create_absen(db: Session, absen_data: AbsenCreate, id_matkul: int, id_jadwal: int) -> Absen:
+def create_absen(db: Session, absen_data: AbsenCreate) -> Absen:
     # Validasi agar sesi terbuka
-    if not is_session_open(id_jadwal):
+    if not is_session_open(AbsenCreate.id_jadwal):
         raise HTTPException(status_code=403, detail="Sesi absensi tidak dibuka.")
 
     # Validasi: Mahasiswa tidak boleh absen lebih dari sekali
     existing = db.query(Absen).filter(
         Absen.id_mahasiswa == absen_data.id_mahasiswa,
-        Absen.id_jadwal == id_jadwal
+        Absen.id_jadwal == absen_data.id_jadwal
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="Mahasiswa sudah melakukan absensi pada jadwal ini.")
 
     # Dapatkan informasi jadwal
-    jadwal = db.query(Jadwal).filter(Jadwal.id_jadwal == id_jadwal).first()
+    jadwal = db.query(Jadwal).filter(Jadwal.id_jadwal == absen_data.id_jadwal).first()
     if not jadwal:
         raise HTTPException(status_code=404, detail="Jadwal tidak ditemukan.")
 
@@ -43,7 +43,7 @@ def create_absen(db: Session, absen_data: AbsenCreate, id_matkul: int, id_jadwal
 
     # Validasi bahwa matakuliah dari kelas sesuai dengan id_matkul
     matkul_ids = [mk.id_matkul for mk in kelas.matakuliah]
-    if id_matkul not in matkul_ids:
+    if AbsenCreate.id_matkul not in matkul_ids:
         raise HTTPException(status_code=400, detail="Matakuliah tidak sesuai dengan kelas ini.")
 
     # Validasi: Mahasiswa harus terdaftar di kelas ini (via association table)
@@ -54,8 +54,8 @@ def create_absen(db: Session, absen_data: AbsenCreate, id_matkul: int, id_jadwal
     # Buat absen
     new_absen = Absen(
         id_mahasiswa=absen_data.id_mahasiswa,
-        id_matkul=id_matkul,
-        id_jadwal=id_jadwal,
+        id_matkul=AbsenCreate.id_matkul,
+        id_jadwal=AbsenCreate.id_jadwal,
         status=absen_data.status,
     )
     db.add(new_absen)

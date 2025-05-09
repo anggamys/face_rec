@@ -37,14 +37,20 @@ include "../../components/header.php";
                         <tbody>
                             <?php foreach ($mataKuliahList as $index => $mk): ?>
                                 <tr>
-                                    <td><?= $index + 1; ?></td>
-                                    <td><?= htmlspecialchars($mk["nama_matkul"]); ?></td>
+                                    <td><?= $index + 1 ?></td>
+                                    <td><?= htmlspecialchars(
+                                        $mk["nama_matkul"]
+                                    ) ?></td>
                                     <td>
                                         <?php if (!empty($mk["id_matkul"])): ?>
-                                            <a href="/mata-kuliah/form_mata_kuliah.php?id=<?= urlencode($mk["id_matkul"]); ?>" class="btn btn-sm btn-warning me-1">
+                                            <a href="/mata-kuliah/form_mata_kuliah.php?id=<?= urlencode(
+                                                $mk["id_matkul"]
+                                            ) ?>" class="btn btn-sm btn-warning me-1">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </a>
-                                            <a href="/mata-kuliah/delete_mata_kuliah.php?id=<?= urlencode($mk["id_matkul"]); ?>"
+                                            <a href="/mata-kuliah/delete_mata_kuliah.php?id=<?= urlencode(
+                                                $mk["id_matkul"]
+                                            ) ?>"
                                                 class="btn btn-sm btn-danger"
                                                 onclick="return confirm('Yakin ingin menghapus mata kuliah ini?');">
                                                 <i class="bi bi-trash"></i> Hapus
