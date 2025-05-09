@@ -1,14 +1,21 @@
 <?php
 
-function logError($message)
+function logMessage(string $level, string $message): void
 {
-    error_log($message);
+    $timestamp = date("Y-m-d H:i:s");
+    error_log("[{$timestamp}] [$level] $message");
 }
 
-function sendRequest($method, $url, $data = null)
+function sendRequest(string $method, string $url, ?array $data = null): array
 {
     $token = $_SESSION['token'] ?? ($_COOKIE['token'] ?? null);
-    if (!$token) return ['success' => false, 'status' => 401, 'error' => 'Unauthorized'];
+    if (!$token) {
+        return [
+            'success' => false,
+            'status' => 401,
+            'error' => 'Unauthorized (Token not found)'
+        ];
+    }
 
     $ch = curl_init($url);
 
@@ -23,9 +30,11 @@ function sendRequest($method, $url, $data = null)
         CURLOPT_CUSTOMREQUEST => strtoupper($method)
     ];
 
-    $jsonData = $data !== null ? json_encode($data) : null;
-    if ($jsonData) {
+    if ($data !== null) {
+        $jsonData = json_encode($data);
         $options[CURLOPT_POSTFIELDS] = $jsonData;
+    } else {
+        $jsonData = null;
     }
 
     curl_setopt_array($ch, $options);
@@ -36,15 +45,16 @@ function sendRequest($method, $url, $data = null)
     curl_close($ch);
 
     $decoded = json_decode($response, true);
+    $isJson = is_array($decoded);
 
-    // DEBUG LOG
-    error_log("Method: $method, URL: $url, Data: $jsonData, HTTP Code: $httpCode, Response: $response, cURL Error: $curlError, Decoded: " . json_encode($decoded));
+    $logLevel = $curlError ? "ERROR" : "INFO";
+    logMessage($logLevel, "Method: $method | URL: $url | Payload: $jsonData | HTTP Code: $httpCode | Raw Response: $response | Decoded: " . ($isJson ? json_encode($decoded) : 'Invalid JSON') . " | cURL Error: $curlError");
 
     return [
-        'success' => $response !== false && $httpCode < 400,
+        'success' => !$curlError && $httpCode < 400,
         'status' => $httpCode,
-        'data' => $decoded,
+        'data' => $isJson ? $decoded : null,
         'raw' => $response,
-        'error' => $curlError ?: ($decoded['detail'] ?? json_encode($decoded))
+        'error' => $curlError ?: ($decoded['detail'] ?? ($isJson ? json_encode($decoded) : 'Unknown error'))
     ];
 }

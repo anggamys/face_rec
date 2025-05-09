@@ -1,45 +1,20 @@
 <?php
+require_once __DIR__ . "/../libs/helper.php";
 
-$backend_url = "http://localhost:8000";
+$backend_url = "http://localhost:8000/matakuliah";
 
 function getAllMataKuliah()
 {
     global $backend_url;
 
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
+    $response = sendRequest("GET", "$backend_url/");
+
+    if (isset($response['success']) && $response['success']) {
+        return $response['data'];
     }
 
-    $token = $_SESSION['token'] ?? null;
-    if (!$token) {
-        return false;
-    }
-
-    $url = $backend_url . "/matakuliah/";
-
-    // Gunakan cURL untuk kontrol error yang lebih baik
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: Bearer $token"
-    ]);
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    // Cek jika terjadi error pada cURL
-    if ($response === false) {
-        return false;
-    }
-
-    // Cek jika HTTP response buruk (>=400)
-    if ($httpCode >= 400) {
-        return false;
-    }
-
-    // Return data dalam format array
-    return json_decode($response, true);
+    logError("Failed to fetch all mata kuliah. Response: " . json_encode($response));
+    return [];
 }
 
 function addMataKuliah($nama_matkul)

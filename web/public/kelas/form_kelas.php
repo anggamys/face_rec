@@ -30,8 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($kode_kelas_input === '' || $nama_kelas === '' || empty($id_matkul_array)) {
         $errorMessage = "Semua field wajib diisi.";
     } else {
-        // Kirim sebagai array atau join jadi string tergantung backend
-        $id_matkul_payload = is_array($id_matkul_array) ? $id_matkul_array : [$id_matkul_array];
+        // ✅ Pastikan id_matkul berupa array of int
+        $id_matkul_payload = is_array($id_matkul_array)
+            ? array_map('intval', $id_matkul_array)
+            : [intval($id_matkul_array)];
 
         if ($kode_kelas && $kelas) {
             $response = updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul_payload);

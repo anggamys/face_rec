@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from datetime import date
 
 class JadwalBase(BaseModel):
+    kode_kelas: str
     week: int
     tanggal: date
 

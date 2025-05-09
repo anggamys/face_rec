@@ -1,5 +1,6 @@
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from app.models.kelas import Kelas
 from app.models.user import User
 from app.models.matakuliah import Matakuliah
@@ -32,10 +33,15 @@ def create_kelas(db: Session, kelas: KelasCreate) -> dict:
     db.commit()
     db.refresh(new_kelas)
 
-    for m in valid_mahasiswa:
-        db.add(kelas_mahasiswa(kode_kelas=new_kelas.kode_kelas, nrp_mahasiswa=m.nrp))
-    for mk in valid_matakuliah:
-        db.add(kelas_matkul(kode_kelas=new_kelas.kode_kelas, id_matkul=mk.id_matkul))
+    db.bulk_save_objects([
+        kelas_mahasiswa(kode_kelas=new_kelas.kode_kelas, nrp_mahasiswa=m.nrp)
+        for m in valid_mahasiswa
+    ])
+
+    db.execute(
+        insert(kelas_matkul),
+        [{"kode_kelas": new_kelas.kode_kelas, "id_matkul": mk.id_matkul} for mk in valid_matakuliah]
+    )
 
     db.commit()
 
@@ -49,7 +55,8 @@ def create_kelas(db: Session, kelas: KelasCreate) -> dict:
 
 # Tambah mahasiswa ke kelas
 def create_kelas_mahasiswa(db: Session, kode_kelas: str, mahasiswa_ids: List[str]) -> bool:
-    if not db.query(Kelas).filter_by(kode_kelas=kode_kelas).first():
+    kelas = db.query(Kelas).filter_by(kode_kelas=kode_kelas).first()
+    if not kelas:
         return False
 
     valid_mahasiswa = validate_mahasiswa(db, mahasiswa_ids)
@@ -63,7 +70,8 @@ def create_kelas_mahasiswa(db: Session, kode_kelas: str, mahasiswa_ids: List[str
 
 # Tambah matakuliah ke kelas
 def create_kelas_matakuliah(db: Session, kode_kelas: str, matkul_ids: List[int]) -> bool:
-    if not db.query(Kelas).filter_by(kode_kelas=kode_kelas).first():
+    kelas = db.query(Kelas).filter_by(kode_kelas=kode_kelas).first()
+    if not kelas:
         return False
 
     valid_matakuliah = validate_matakuliah(db, matkul_ids)
@@ -110,9 +118,9 @@ def get_kelas_by_kode(db: Session, kode_kelas: str) -> Optional[dict]:
 
 # Ambil kelas berdasarkan ID matakuliah
 def get_kelas_by_matkul(db: Session, id_matkul: int) -> List[dict]:
-    kelas_matkul = db.query(kelas_matkul).filter_by(id_matkul=id_matkul).all()
+    kelas_matkul_records = db.query(kelas_matkul).filter_by(id_matkul=id_matkul).all()
     results = []
-    for km in kelas_matkul:
+    for km in kelas_matkul_records:
         kelas = db.query(Kelas).filter_by(kode_kelas=km.kode_kelas).first()
         mahasiswa = db.query(kelas_mahasiswa).filter_by(kode_kelas=kelas.kode_kelas).all()
         results.append({
@@ -124,7 +132,7 @@ def get_kelas_by_matkul(db: Session, id_matkul: int) -> List[dict]:
         })
     return results
 
-# Menambahkan entri ke tabel kelas_matkul
+# Update kelas
 def update_kelas(db: Session, kode_kelas: str, kelas_update: KelasUpdate) -> Optional[dict]:
     kelas = db.query(Kelas).filter_by(kode_kelas=kode_kelas).first()
     if not kelas:
@@ -135,19 +143,18 @@ def update_kelas(db: Session, kode_kelas: str, kelas_update: KelasUpdate) -> Opt
     if kelas_update.mahasiswa:
         valid_mahasiswa = validate_mahasiswa(db, kelas_update.mahasiswa)
         db.query(kelas_mahasiswa).filter_by(kode_kelas=kode_kelas).delete()
-        for m in valid_mahasiswa:
-            db.add(kelas_mahasiswa(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp))
+        db.bulk_save_objects([
+            kelas_mahasiswa(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp) for m in valid_mahasiswa
+        ])
 
     if kelas_update.matakuliah:
         valid_matakuliah = validate_matakuliah(db, kelas_update.matakuliah)
         db.query(kelas_matkul).filter_by(kode_kelas=kode_kelas).delete()
-        for mk in valid_matakuliah:
-            # Gunakan statement insert untuk memasukkan data ke tabel kelas_matkul
-            db.execute(
-                insert(kelas_matkul).values(kode_kelas=kode_kelas, id_matkul=mk.id_matkul)
-            )
+        db.execute(
+            insert(kelas_matkul),
+            [{"kode_kelas": kode_kelas, "id_matkul": mk.id_matkul} for mk in valid_matakuliah]
+        )
 
-    # Commit perubahan ke database
     db.commit()
     db.refresh(kelas)
 

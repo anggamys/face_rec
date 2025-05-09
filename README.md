@@ -76,3 +76,5 @@ _Work in progress..._
    ```bash
    php -S localhost:8000 -t web/public
    ```
+
+   > Note: You can change the port number if needed.

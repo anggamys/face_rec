@@ -9,16 +9,15 @@ from typing import List
 
 router = APIRouter(prefix='/jadwal',tags=["Jadwal"])
 
-@router.post("/{kode_kelas}", response_model=JadwalResponse)
+@router.post("/", response_model=JadwalResponse)
 def create_jadwal(
     jadwal: JadwalCreate,
-    kode_kelas: str = Path(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role != "dosen":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
-    return jadwal_service.create_jadwal(db, jadwal, kode_kelas)
+    return jadwal_service.create_jadwal(db, jadwal)
 
 @router.get("/", response_model=List[JadwalResponse])
 def get_all_jadwal(
@@ -33,7 +32,6 @@ def get_all_jadwal(
 def get_jadwal_by_id(
     id_jadwal: int = Path(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
 ):
     return jadwal_service.get_jadwal_by_id(db, id_jadwal)
 
@@ -43,5 +41,26 @@ def get_jadwal_by_kelas(
     db: Session = Depends(get_db)
 ):
     return jadwal_service.get_jadwal_by_kelas(db, kode_kelas)
+
+@router.put("/{id_jadwal}", response_model=JadwalResponse)
+def update_jadwal(
+    jadwal_update: JadwalUpdate,
+    id_jadwal: int = Path(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "dosen":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
+    return jadwal_service.update_jadwal(db, id_jadwal, jadwal_update)
+
+@router.delete("/{id_jadwal}", response_model=JadwalResponse)
+def delete_jadwal(
+    id_jadwal: int = Path(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "dosen":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
+    return jadwal_service.delete_jadwal(db, id_jadwal)
 
 # router.include_router(absen.router, prefix="/{id_jadwal}/absen")
