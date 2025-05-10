@@ -36,8 +36,8 @@ include "../../components/header.php";
 
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0 fw-bold text-dark">📋 Daftar Absensi</h2>
-        <a href="absensi/buka-sesi-absensi.php" class="btn btn-primary">
-          <i class="bi bi-plus-circle me-2"></i> Buka Sesi Absensi
+        <a href="/absensi/sesi-absensi.php" class="btn btn-primary shadow-sm">
+          <i class="bi bi-plus-circle me-1"></i> Buka Sesi Absensi
         </a>
       </div>
 

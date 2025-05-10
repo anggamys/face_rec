@@ -3,12 +3,19 @@ session_start();
 
 require_once "../auth_check.php";
 require_once "../../action/jadwal.php";
+require_once "../../action/kelas.php";
+require_once "../../action/absen-session.php";
 require_once "../../action/mata-kuliah.php";
 
 require_role("dosen");
 
-$allJadwal = getAllJadwal();
-$allMataKuliah = getAllMataKuliah();
+$successMessage = $_SESSION['successMessage'] ?? '';
+$errorMessage = $_SESSION['errorMessage'] ?? '';
+unset($_SESSION['successMessage'], $_SESSION['errorMessage']);
+
+// Ambil semua jadwal
+$fetchResult = getAllJadwal();
+$allJadwal = $fetchResult["data"] ?? [];
 
 include "../../components/header.php";
 ?>
@@ -18,61 +25,102 @@ include "../../components/header.php";
 
     <div class="content flex-grow-1 p-4">
         <div class="container">
-            <!-- Breadcrumb untuk navigasi -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="../dashboard/" style="font-size: 1.1rem;">Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="daftar_absensi.php" style="font-size: 1.1rem;">Daftar Absensi</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page" style="font-size: 1.1rem;">Buka Sesi Absensi</li>
-                </ol>
-            </nav>
-
-            <h2 class="mb-4">Buka Sesi Absensi</h2>
-
-            <div class="alert alert-info mb-4">
-                <p class="mb-0"><i class="bi bi-info-circle-fill me-2"></i> Pilih jadwal dan mata kuliah untuk membuka sesi absensi baru.</p>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Daftar Jadwal</h2>
+                <a href="/absensi/index.php" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Kembali
+                </a>
             </div>
 
-            <form id="openAbsensiForm" action="process_buka_sesi_absensi.php" method="POST">
-                <div class="mb-4">
-                    <label for="id_jadwal" class="form-label">Pilih Jadwal</label>
-                    <select class="form-select form-select-lg" id="id_jadwal" name="id_jadwal" required>
-                        <option value="" selected disabled>-- Pilih Jadwal --</option>
-                        <?php foreach ($allJadwal as $jadwal): ?>
-                            <option value="<?= htmlspecialchars($jadwal["id_jadwal"]) ?>">
-                                <?= "Jadwal #" . htmlspecialchars($jadwal["id_jadwal"]) . " - " . htmlspecialchars($jadwal["kode_kelas"]) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small class="form-text text-muted mt-2">Pilih jadwal sesuai dengan kelas yang akan diampu.</small>
-                </div>
+            <?php if ($successMessage): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($successMessage) ?></div>
+            <?php elseif ($errorMessage): ?>
+                <div class="alert alert-danger"><?= htmlspecialchars($errorMessage) ?></div>
+            <?php endif; ?>
 
-                <div class="mb-4">
-                    <label for="id_matkul" class="form-label">Pilih Mata Kuliah</label>
-                    <select class="form-select form-select-lg" id="id_matkul" name="id_matkul" required>
-                        <option value="" selected disabled>-- Pilih Mata Kuliah --</option>
-                        <?php foreach ($allMataKuliah as $matkul): ?>
-                            <option value="<?= htmlspecialchars($matkul["id_matkul"]) ?>">
-                                <?= htmlspecialchars($matkul["nama_matkul"]) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <small class="form-text text-muted mt-2">Pilih mata kuliah yang akan diajarkan pada jadwal tersebut.</small>
-                </div>
+            <?php if (empty($allJadwal)): ?>
+                <div class="alert alert-warning">Tidak ada jadwal tersedia.</div>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Nama Matkul</th>
+                                <th>Kelas</th>
+                                <th>Tanggal</th>
+                                <th>Jam Mulai</th>
+                                <th>Jam Selesai</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($allJadwal as $index => $jadwal): ?>
+                                <tr>
+                                    <td class="text-center"><?= $index + 1 ?></td>
+                                    <td>
+                                        <?php
+                                        $matkul = getMataKuliahById($jadwal['id_matkul']);
+                                        echo $matkul
+                                            ? htmlspecialchars($matkul['id_matkul'] . " - " . $matkul['nama_matkul'])
+                                            : "<span class='text-danger'>Matkul tidak ditemukan</span>";
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $kelas = getKelasByKodeKelas($jadwal['kode_kelas']);
+                                        echo $kelas
+                                            ? htmlspecialchars($kelas['data']['kode_kelas'] . " - " . $kelas['data']['nama_kelas'])
+                                            : "<span class='text-danger'>Kelas tidak ditemukan</span>";
+                                        ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($jadwal['tanggal'] ?? '-') ?></td>
+                                    <td>
+                                        <?php
+                                        $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
+                                        $waktuMulai = $absensiSession['data']['waktu_mulai'] ?? null;
+                                        echo $waktuMulai ? formatTanggalIndonesia($waktuMulai) : '-';
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
+                                        $waktuSelesai = $absensiSession['data']['waktu_berakhir'] ?? null;
+                                        echo $waktuSelesai ? formatTanggalIndonesia($waktuSelesai) : '-';
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
+                                        $isActive = $absensiSession && !empty($absensiSession['data']) && $absensiSession['data']['is_active'] == true;
+                                        ?>
 
-                <div class="d-flex justify-content-between">
-                    <a href="daftar_absensi.php" class="btn btn-secondary btn-lg">
-                        <i class="bi bi-x-circle me-2"></i> Batal
-                    </a>
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="bi bi-check-circle me-2"></i> Buka Sesi
-                    </button>
+                                        <?php if ($isActive): ?>
+                                            <!-- Tombol Tutup Sesi -->
+                                            <form method="POST" action="open-session.php" class="d-inline">
+                                                <input type="hidden" name="id_jadwal" value="<?= htmlspecialchars($jadwal['id_jadwal']) ?>">
+                                                <input type="hidden" name="action" value="close">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    Tutup Sesi Absensi
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <!-- Tombol Buka Sesi -->
+                                            <form method="POST" action="open-session.php" class="d-inline">
+                                                <input type="hidden" name="id_jadwal" value="<?= htmlspecialchars($jadwal['id_jadwal']) ?>">
+                                                <input type="hidden" name="action" value="open">
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    Buka Sesi Absensi
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
-            </form>
+            <?php endif; ?>
         </div>
     </div>
 </div>

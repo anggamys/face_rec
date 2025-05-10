@@ -21,12 +21,12 @@ function getAllKelas()
     }
 }
 
-function getKelasById($id)
+function getKelasByKodeKelas($kode_kelas)
 {
     global $kelasurl;
 
     try {
-        $response = sendRequest("GET", "$kelasurl/$id");
+        $response = sendRequest("GET", "$kelasurl/$kode_kelas");
 
         if ($response["success"]) {
             return [
@@ -38,11 +38,11 @@ function getKelasById($id)
         return [
             "success" => false,
             "error" =>
-                $response["error"] ??
-                "Gagal mengambil data kelas dengan ID $id.",
+            $response["error"] ??
+                "Gagal mengambil data kelas dengan ID $kode_kelas.",
         ];
     } catch (Exception $e) {
-        logMessage("ERROR", "Exception getKelasById($id): " . $e->getMessage());
+        logMessage("ERROR", "Exception getKelasByKodeKelas($kode_kelas): " . $e->getMessage());
         return [
             "success" => false,
             "error" => "Terjadi kesalahan saat mengambil data kelas.",
@@ -63,7 +63,7 @@ function getKelasByMatkul($id_matkul)
 
         return [
             "error" =>
-                $response["error"] ??
+            $response["error"] ??
                 "Gagal mengambil kelas berdasarkan ID matkul $id_matkul.",
         ];
     } catch (Exception $e) {

@@ -39,30 +39,30 @@ include "../../components/header.php";
                             <?php foreach ($kelasList as $index => $kelas): ?>
                                 <tr>
                                     <td class="text-center"><?= $index +
-                                        1 ?></td>
+                                                                1 ?></td>
                                     <td><?= htmlspecialchars(
-                                        $kelas["nama_kelas"] ?? "-"
-                                    ) ?></td>
+                                            $kelas["nama_kelas"] ?? "-"
+                                        ) ?></td>
                                     <td><?= htmlspecialchars(
-                                        $kelas["kode_kelas"] ?? "-"
-                                    ) ?></td>
+                                            $kelas["kode_kelas"] ?? "-"
+                                        ) ?></td>
                                     <td class="text-center">
                                         <?php if (
                                             !empty($kelas["kode_kelas"])
                                         ): ?>
                                             <a href="/kelas/form_kelas.php?kode_kelas=<?= urlencode(
-                                                $kelas["kode_kelas"]
-                                            ) ?>"
-                                               class="btn btn-sm btn-outline-warning me-2" data-bs-toggle="tooltip" title="Edit Kelas" aria-label="Edit Kelas">
+                                                                                            $kelas["kode_kelas"]
+                                                                                        ) ?>"
+                                                class="btn btn-sm btn-outline-warning me-2" data-bs-toggle="tooltip" title="Edit Kelas" aria-label="Edit Kelas">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <a href="/kelas/delete_kelas.php?kode_kelas=<?= urlencode(
-                                                $kelas["kode_kelas"]
-                                            ) ?>"
-                                               class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Hapus Kelas" aria-label="Hapus Kelas"
-                                               onclick="return confirm('Apakah Anda yakin ingin menghapus kelas \"<?= htmlspecialchars(
-                                                   $kelas["nama_kelas"]
-                                               ) ?>\"?');">
+                                                                                            $kelas["kode_kelas"]
+                                                                                        ) ?>"
+                                                class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Hapus Kelas" aria-label="Hapus Kelas"
+                                                onclick="return confirm('Apakah Anda yakin ingin menghapus kelas \" <?= htmlspecialchars(
+                                                                                                                        $kelas["nama_kelas"]
+                                                                                                                    ) ?>\"?');">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>
@@ -82,12 +82,5 @@ include "../../components/header.php";
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-    });
-</script>
 
 <?php include "../../components/footer.php"; ?>

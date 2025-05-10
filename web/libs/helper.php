@@ -67,3 +67,36 @@ function sendRequest(
         "error" => $isSuccess ? null : $errorMsg,
     ];
 }
+
+function formatTanggalIndonesia($tanggalIso)
+{
+    $bulan = [
+        1 => 'Januari',
+        'Februari',
+        'Maret',
+        'April',
+        'Mei',
+        'Juni',
+        'Juli',
+        'Agustus',
+        'September',
+        'Oktober',
+        'November',
+        'Desember'
+    ];
+
+    try {
+        // Ubah ke zona waktu Indonesia
+        $date = new DateTime($tanggalIso, new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone('Asia/Jakarta'));
+
+        $day = $date->format('d');
+        $month = $bulan[(int)$date->format('m')];
+        $year = $date->format('Y');
+        $time = $date->format('H:i');
+
+        return "$day $month $year, $time WIB";
+    } catch (Exception $e) {
+        return "Format tanggal tidak valid";
+    }
+}

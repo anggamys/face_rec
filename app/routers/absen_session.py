@@ -21,13 +21,13 @@ def open_session(
     return absen_session_service.open_absen_session(db, id_jadwal, current_user)
 
 
-@router.post("/close/{id_session}", response_model=AbsenSessionResponse)
+@router.post("/close/{id_jadwal}", response_model=AbsenSessionResponse)
 def close_session(
-    id_session: int = Path(..., description="ID sesi absensi yang ingin ditutup"),
+    id_jadwal: int = Path(..., description="ID jadwal untuk sesi absensi yang ingin ditutup"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return absen_session_service.close_absen_session(db, id_session, current_user)
+    return absen_session_service.close_absen_session(db, id_jadwal, current_user)
 
 
 @router.get("/", response_model=List[AbsenSessionResponse])
@@ -38,10 +38,10 @@ def get_all_sessions(
     return absen_session_service.get_all_sessions(db)
 
 
-@router.get("/{id_session}", response_model=AbsenSessionResponse)
-def get_session_by_id(
-    id_session: int = Path(..., description="ID sesi absensi"),
+@router.get("/{id_jadwal}", response_model=AbsenSessionResponse)
+def get_session_by_id_jadwal(
+    id_jadwal: int = Path(..., description="ID jadwal untuk sesi absensi"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return absen_session_service.get_session_by_id(db, id_session)
+    return absen_session_service.get_session_by_id_jadwal(db, id_jadwal)

@@ -1,10 +1,11 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 class AbsenSessionBase(BaseModel):
     id_jadwal: int
     opened_by: int | None = None
-    waktu_mulai: str | None = None
-    waktu_berakhir: str | None = None
+    waktu_mulai: datetime | None = None  # ✅ ubah ke datetime
+    waktu_berakhir: datetime | None = None
     is_active: bool = True
 
 class AbsenSessionCreate(AbsenSessionBase):
@@ -12,11 +13,6 @@ class AbsenSessionCreate(AbsenSessionBase):
 
 class AbsenSessionResponse(AbsenSessionBase):
     id_session: int
-    id_jadwal: int
-    opened_by: int | None = None
-    waktu_mulai: str | None = None
-    waktu_berakhir: str | None = None
-    is_active: bool = True
 
     class Config:
         orm_mode = True

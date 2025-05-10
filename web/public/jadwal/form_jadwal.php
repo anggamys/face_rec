@@ -121,12 +121,12 @@ include "../../components/header.php";
 
             <?php if ($successMessage): ?>
                 <div class="alert alert-success"><?= htmlspecialchars(
-                    $successMessage
-                ) ?></div>
+                                                        $successMessage
+                                                    ) ?></div>
             <?php elseif ($errorMessage): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars(
-                    $errorMessage
-                ) ?></div>
+                                                    $errorMessage
+                                                ) ?></div>
             <?php endif; ?>
 
             <form action="" method="post" class="needs-validation" novalidate>
@@ -141,9 +141,9 @@ include "../../components/header.php";
                             $selected =
                                 isset($jadwal["kode_kelas"]) &&
                                 $jadwal["kode_kelas"] === $kode
-                                    ? "selected"
-                                    : "";
-                            ?>
+                                ? "selected"
+                                : "";
+                        ?>
                             <option value="<?= $kode ?>" <?= $selected ?>><?= "$kode - $nama" ?></option>
                         <?php
                         endforeach; ?>
@@ -165,9 +165,9 @@ include "../../components/header.php";
                             $selected =
                                 isset($jadwal["kode_matkul"]) &&
                                 $jadwal["kode_matkul"] === $kode
-                                    ? "selected"
-                                    : "";
-                            ?>
+                                ? "selected"
+                                : "";
+                        ?>
                             <option value="<?= $kode ?>" <?= $selected ?>><?= "$kode - $nama" ?></option>
                         <?php
                         endforeach; ?>
@@ -182,8 +182,8 @@ include "../../components/header.php";
                     <label for="tanggal" class="form-label">Tanggal Pertemuan</label>
                     <input type="date" id="tanggal" name="tanggal" class="form-control" required
                         value="<?= isset($jadwal["tanggal"])
-                            ? htmlspecialchars($jadwal["tanggal"])
-                            : "" ?>">
+                                    ? htmlspecialchars($jadwal["tanggal"])
+                                    : "" ?>">
                     <div class="invalid-feedback">Tanggal harus diisi.</div>
                 </div>
 
@@ -191,8 +191,8 @@ include "../../components/header.php";
                     <label for="week" class="form-label">Minggu Ke-</label>
                     <input type="number" id="week" name="week" class="form-control" min="1" required
                         value="<?= isset($jadwal["week"])
-                            ? htmlspecialchars($jadwal["week"])
-                            : "" ?>">
+                                    ? htmlspecialchars($jadwal["week"])
+                                    : "" ?>">
                     <div class="invalid-feedback">Isi minggu ke berapa (angka minimal 1).</div>
                 </div>
 
