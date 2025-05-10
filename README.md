@@ -1,80 +1,71 @@
 # Face Recognition for Presence Detection
 
-## Overview
-
-_Work in progress..._
+A face recognition-based attendance system using FastAPI for the backend and PHP for the frontend.
 
 ## Installation
 
-1. Clone the repository.
+### Clone the repository
 
-   ```bash
-   git clone <repository-url>
-   ```
+```bash
+git clone <repository-url>
+cd face-recognition-presence
+```
 
-2. Ensure Python 3.8 or higher is installed.
+### Set up a Python virtual environment
 
-3. Create and activate a virtual environment.
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-   ```
+### Install dependencies
 
-4. Install the required packages.
+```bash
+pip install -r requirements.txt
+```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Set up PostgreSQL
 
-5. Set up PostgreSQL database.
+```sql
+CREATE DATABASE presensi;
+```
 
-   - Open PostgreSQL command line:
+### Configure environment variables
 
-     ```bash
-     psql -U postgres
-     ```
+```bash
+cp .env.example .env
+```
 
-   - Create the database:
+> Edit `.env` with your database credentials.
 
-     ```sql
-     CREATE DATABASE presensi;
-     ```
-
-6. Configure environment variables. Copy the template file `.env.example` to `.env`.
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Edit the `.env` file to match your database configuration.
+---
 
 ## Usage
 
-1. Navigate to the project directory.
+### Activate the virtual environment
 
-   ```bash
-   cd /path/to/your/project
-   ```
+```bash
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-2. Update the `.env` file with your database credentials.
+### Start the FastAPI server
 
-3. Activate the virtual environment.
+```bash
+uvicorn app.main:app --reload
+```
 
-   ```bash
-   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-   ```
+> The server will run on `http://localhost:8000`. You can access the API documentation at `http://localhost:8000/docs`.
 
-4. Start the FastAPI server.
+### Run the PHP frontend
 
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+```bash
+php -S localhost:8081 -t web/public
+```
 
-5. Run the PHP server for the frontend.
+> The frontend will run on `http://localhost:8081`.
 
-   ```bash
-   php -S localhost:8000 -t web/public
-   ```
+**Warning:** To update your existing database to match the current database model, run the following command:
 
-   > Note: You can change the port number if needed.
+```bash
+python3 -m app.reset_db
+```

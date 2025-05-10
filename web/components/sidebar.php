@@ -45,12 +45,21 @@ $nav_items = [
         "role" => "dosen",
     ],
     [
+        "label" => "Riwayat Absensi",
+        "icon" => "bi-clock-history",
+        "href" => "/absensi/riwayat-absensi.php",
+        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
+            "riwayat-absensi.php",
+        "role" => "mahasiswa",
+    ],
+    [
         "label" => "Profil",
         "icon" => "bi-person-lines-fill",
-        "href" => "#",
-        "active_check" => fn() => false,
+        "href" => "/profil.php",
+        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
+            "profil.php",
         "role" => null,
-    ],
+    ]
 ];
 ?>
 

@@ -9,4 +9,4 @@ __pycache__/*
 .ropeproject
 
 # Custom files
-reset_db.py
+# reset_db.py
