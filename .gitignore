@@ -1,0 +1,12 @@
+# Python
+*.pyc
+__pycache__/*
+
+# Environment
+*.env
+
+# Editor setting
+.ropeproject
+
+# Custom files
+# reset_db.py

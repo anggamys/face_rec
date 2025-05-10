@@ -7,13 +7,10 @@ from app.models.kelas_matkul import kelas_matkul        # Import association tab
 
 class Kelas(Base):
     __tablename__ = "kelas"
-    
+
     id_kelas = Column(Integer, primary_key=True, index=True)
     kode_kelas = Column(String, unique=True, nullable=True)
     nama_kelas = Column(String, nullable=False)
-    
-    # Many-to-many dengan Matakuliah melalui association table kelas_matkul
+
     matakuliah = relationship("Matakuliah", secondary=kelas_matkul, back_populates="kelas")
-    
-    # Many-to-many dengan Mahasiswa melalui association table kelas_mahasiswa
     mahasiswa = relationship("User", secondary=kelas_mahasiswa, back_populates="kelas")

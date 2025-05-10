@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// (Opsional) Kirim logout ke API jika dibutuhkan
 if (isset($_SESSION['token'])) {
     $token = $_SESSION['token'];
     $ch = curl_init('http://localhost:8000/auth/logout');

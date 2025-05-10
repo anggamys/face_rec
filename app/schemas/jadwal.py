@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from datetime import date
 
 class JadwalBase(BaseModel):
+    kode_kelas: str
+    id_matkul: int
     week: int
     tanggal: date
 
@@ -14,6 +16,7 @@ class JadwalUpdate(JadwalBase):
 class JadwalResponse(JadwalBase):
     id_jadwal: int
     kode_kelas: str
+    id_matkul: int
     week: int
     tanggal: date
 

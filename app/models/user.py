@@ -1,8 +1,9 @@
 # app/models/user.py
-from sqlalchemy import Column, BigInteger, String, Enum, CheckConstraint, Integer
-from sqlalchemy.orm import relationship
-from app.database import Base
 import enum
+from app.models.kelas_mahasiswa import kelas_mahasiswa
+from app.database import Base
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, BigInteger, String, Enum, CheckConstraint, Integer
 
 class RoleEnum(str, enum.Enum):
     mahasiswa = "mahasiswa"
@@ -16,8 +17,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
     role = Column(Enum(RoleEnum), nullable=False)
-    nrp = Column(BigInteger, unique=True, nullable=True)  # Hanya untuk mahasiswa
-    nip = Column(BigInteger, unique=True, nullable=True)  # Hanya untuk dosen
+    nrp = Column(BigInteger, unique=True, nullable=True)
+    nip = Column(BigInteger, unique=True, nullable=True)
 
     __table_args__ = (
         CheckConstraint(
@@ -26,5 +27,4 @@ class User(Base):
         ),
     )
 
-    # Many-to-many dengan Kelas (mahasiswa)
-    kelas = relationship("Kelas", secondary="kelas_mahasiswa", back_populates="mahasiswa")
+    kelas = relationship("Kelas", secondary=kelas_mahasiswa, back_populates="mahasiswa")

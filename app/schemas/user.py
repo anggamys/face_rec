@@ -24,7 +24,7 @@ class UserOut(UserBase):
     nip: Optional[int] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # <- Ini penting!
 
 class UserLogin(BaseModel):
     email: EmailStr
