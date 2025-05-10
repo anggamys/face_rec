@@ -6,76 +6,146 @@ $jadwalurl = "http://localhost:8000/jadwal";
 function getAllJadwal()
 {
     global $jadwalurl;
-    $response = sendRequest("GET", "$jadwalurl/");
 
-    if ($response['success']) {
-        return $response['data'];
+    try {
+        $response = sendRequest("GET", "$jadwalurl/");
+
+        if (!empty($response["success"])) {
+            return [
+                "success" => true,
+                "data" => $response["data"],
+            ];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["message"] ?? "Gagal mengambil data jadwal.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "getAllJadwal exception: " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat mengambil data jadwal.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to fetch all jadwal. Response: " . json_encode($response));
-    return [];
 }
 
-function addJadwal($kode_kelas, $tanggal, $week)
+function addJadwal($kode_kelas, $id_matkul, $tanggal, $week)
 {
     global $jadwalurl;
-    $data = [
-        'kode_kelas' => $kode_kelas,
-        'tanggal' => $tanggal,
-        'week' => $week
-    ];
 
-    $response = sendRequest("POST", "$jadwalurl/", $data);
+    try {
+        $data = [
+            "kode_kelas" => $kode_kelas,
+            "id_matkul" => $id_matkul,
+            "tanggal" => $tanggal,
+            "week" => $week,
+        ];
 
-    if ($response['success']) {
-        return $response['data'];
+        $response = sendRequest("POST", "$jadwalurl/", $data);
+
+        if (!empty($response["success"])) {
+            return [
+                "success" => true,
+                "data" => $response["data"],
+            ];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["message"] ?? "Gagal menambahkan jadwal.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "addJadwal exception: " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat menambahkan jadwal.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to add jadwal. Response: " . json_encode($response));
-    return null;
 }
 
 function getJadwalById($id_jadwal)
 {
     global $jadwalurl;
-    $response = sendRequest("GET", "$jadwalurl/jadwal/$id_jadwal");
 
-    if ($response['success']) {
-        return $response['data'];
+    try {
+        $response = sendRequest("GET", "$jadwalurl/jadwal/$id_jadwal");
+
+        if (!empty($response["success"])) {
+            return [
+                "success" => true,
+                "data" => $response["data"],
+            ];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["message"] ?? "Gagal mengambil jadwal.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "getJadwalById exception: " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat mengambil jadwal.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to fetch jadwal by ID. Response: " . json_encode($response));
-    return null;
 }
 
-function updateJadwal($id_jadwal, $kode_kelas, $tanggal, $week)
+function updateJadwal($id_jadwal, $kode_kelas, $id_matkul, $tanggal, $week)
 {
     global $jadwalurl;
-    $data = [
-        'kode_kelas' => $kode_kelas,
-        'tanggal' => $tanggal,
-        'week' => $week
-    ];
 
-    $response = sendRequest("PUT", "$jadwalurl/jadwal/$id_jadwal", $data);
+    try {
+        $data = [
+            "kode_kelas" => $kode_kelas,
+            "tanggal" => $tanggal,
+            "week" => $week,
+        ];
 
-    if ($response['success']) {
-        return $response['data'];
+        $response = sendRequest("PUT", "$jadwalurl/jadwal/$id_jadwal", $data);
+
+        if (!empty($response["success"])) {
+            return [
+                "success" => true,
+                "data" => $response["data"],
+            ];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["message"] ?? "Gagal memperbarui jadwal.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "updateJadwal exception: " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat memperbarui jadwal.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to update jadwal. Response: " . json_encode($response));
-    return null;
 }
 
 function deleteJadwal($id_jadwal)
 {
     global $jadwalurl;
-    $response = sendRequest("DELETE", "$jadwalurl/$id_jadwal");
 
-    if ($response['success']) {
-        return true;
+    try {
+        $response = sendRequest("DELETE", "$jadwalurl/$id_jadwal");
+
+        if (!empty($response["success"])) {
+            return [
+                "success" => true,
+            ];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["message"] ?? "Gagal menghapus jadwal.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "deleteJadwal exception: " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat menghapus jadwal.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to delete jadwal. Response: " . json_encode($response));
-    return false;
 }

@@ -6,99 +6,159 @@ $kelasurl = "http://localhost:8000/kelas";
 function getAllKelas()
 {
     global $kelasurl;
-    $response = sendRequest("GET", "$kelasurl/");
 
-    if ($response['success']) {
-        return $response['data'];
+    try {
+        $response = sendRequest("GET", "$kelasurl/");
+
+        if ($response["success"]) {
+            return $response["data"];
+        }
+
+        return ["error" => $response["error"] ?? "Gagal mengambil data kelas."];
+    } catch (Exception $e) {
+        logMessage("ERROR", "Exception getAllKelas: " . $e->getMessage());
+        return ["error" => "Terjadi kesalahan saat mengambil data kelas."];
     }
-
-    logMessage("ERROR", "Failed to fetch all kelas. Response: " . json_encode($response));
 }
 
 function getKelasById($id)
 {
     global $kelasurl;
-    $response = sendRequest("GET", "$kelasurl/$id");
 
-    if (isset($response['success']) && $response['success']) {
+    try {
+        $response = sendRequest("GET", "$kelasurl/$id");
+
+        if ($response["success"]) {
+            return [
+                "success" => true,
+                "data" => $response["data"],
+            ];
+        }
+
         return [
-            'success' => true,
-            'data' => $response['data']
+            "success" => false,
+            "error" =>
+                $response["error"] ??
+                "Gagal mengambil data kelas dengan ID $id.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "Exception getKelasById($id): " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat mengambil data kelas.",
         ];
     }
-
-    $errorMessage = $response['message'] ?? 'Unknown error';
-    logMessage("ERROR", "Failed to fetch kelas with ID {$id}. Error: {$errorMessage}");
-
-    return [
-        'success' => false,
-        'error' => $errorMessage
-    ];
 }
 
 function getKelasByMatkul($id_matkul)
 {
     global $kelasurl;
-    $response = sendRequest("GET", "$kelasurl/matkul/$id_matkul");
 
-    if (isset($response['success']) && $response['success']) {
-        return $response['data'];
+    try {
+        $response = sendRequest("GET", "$kelasurl/matkul/$id_matkul");
+
+        if ($response["success"]) {
+            return $response["data"];
+        }
+
+        return [
+            "error" =>
+                $response["error"] ??
+                "Gagal mengambil kelas berdasarkan ID matkul $id_matkul.",
+        ];
+    } catch (Exception $e) {
+        logMessage(
+            "ERROR",
+            "Exception getKelasByMatkul($id_matkul): " . $e->getMessage()
+        );
+        return ["error" => "Terjadi kesalahan saat mengambil data."];
     }
-
-    logMessage("ERROR", "Failed to fetch kelas by matkul ID {$id_matkul}. Response: " . json_encode($response));
-    return [];
 }
 
 function addKelas($kode_kelas, $nama_kelas, $id_matkul)
 {
     global $kelasurl;
-    $data = [
-        'kode_kelas' => $kode_kelas,
-        'nama_kelas' => $nama_kelas,
-        'mahasiswa' => [],
-        'matakuliah' => is_array($id_matkul) ? $id_matkul : [$id_matkul]
-    ];
-    $response = sendRequest("POST", "$kelasurl/", $data);
 
-    if ($response['success']) {
-        return true;
+    try {
+        $payload = [
+            "kode_kelas" => $kode_kelas,
+            "nama_kelas" => $nama_kelas,
+            "mahasiswa" => [],
+            "matakuliah" => (array) $id_matkul,
+        ];
+
+        $response = sendRequest("POST", "$kelasurl/", $payload);
+
+        if ($response["success"]) {
+            return ["success" => true, "data" => $response["data"]];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["error"] ?? "Gagal menambahkan kelas.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "Exception addKelas: " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat menambahkan kelas.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to add kelas. Response: " . json_encode($response));
-    return false;
 }
 
 function updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul)
 {
     global $kelasurl;
 
-    $matakuliahArray = is_array($id_matkul) ? $id_matkul : [$id_matkul];
+    try {
+        $payload = [
+            "kode_kelas" => $kode_kelas_input,
+            "nama_kelas" => $nama_kelas,
+            "matakuliah" => (array) $id_matkul,
+        ];
 
-    $data = [
-        'kode_kelas' => $kode_kelas_input,
-        'nama_kelas' => $nama_kelas,
-        'matakuliah' => $matakuliahArray
-    ];
+        $response = sendRequest("PUT", "$kelasurl/$kode_kelas", $payload);
 
-    $response = sendRequest("PUT", "$kelasurl/$kode_kelas", $data);
+        if ($response["success"]) {
+            return ["success" => true, "data" => $response["data"]];
+        }
 
-    if (isset($response['success']) && $response['success']) {
-        return $response;
+        return [
+            "success" => false,
+            "error" => $response["error"] ?? "Gagal memperbarui kelas.",
+        ];
+    } catch (Exception $e) {
+        logMessage(
+            "ERROR",
+            "Exception updateKelas($kode_kelas): " . $e->getMessage()
+        );
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat memperbarui kelas.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to update kelas with kode_kelas {$kode_kelas}. Response: " . json_encode($response));
-    return $response;
 }
 
 function deleteKelas($id)
 {
     global $kelasurl;
-    $response = sendRequest("DELETE", "$kelasurl/$id");
 
-    if (isset($response['success']) && $response['success']) {
-        return true;
+    try {
+        $response = sendRequest("DELETE", "$kelasurl/$id");
+
+        if ($response["success"]) {
+            return ["success" => true];
+        }
+
+        return [
+            "success" => false,
+            "error" => $response["error"] ?? "Gagal menghapus kelas.",
+        ];
+    } catch (Exception $e) {
+        logMessage("ERROR", "Exception deleteKelas($id): " . $e->getMessage());
+        return [
+            "success" => false,
+            "error" => "Terjadi kesalahan saat menghapus kelas.",
+        ];
     }
-
-    logMessage("ERROR", "Failed to delete kelas with ID {$id}. Response: " . json_encode($response));
-    return false;
 }

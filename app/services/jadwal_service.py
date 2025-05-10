@@ -14,6 +14,7 @@ def get_jadwal_or_404(db: Session, id_jadwal: int) -> Jadwal:
 def create_jadwal(db: Session, jadwal: JadwalCreate) -> Jadwal:
     new_jadwal = Jadwal(
         kode_kelas=jadwal.kode_kelas,
+        id_matkul=jadwal.id_matkul,
         week=jadwal.week,
         tanggal=jadwal.tanggal
     )
