@@ -16,7 +16,7 @@ function getAllMataKuliah()
 
         return [
             "error" =>
-                $response["error"] ?? "Gagal mengambil data mata kuliah.",
+            $response["error"] ?? "Gagal mengambil data mata kuliah.",
         ];
     } catch (Exception $e) {
         logMessage("ERROR", "Exception getAllMataKuliah: " . $e->getMessage());
@@ -66,7 +66,7 @@ function getMataKuliahById($id)
 
         return [
             "error" =>
-                $response["error"] ?? "Data mata kuliah tidak ditemukan.",
+            $response["error"] ?? "Data mata kuliah tidak ditemukan.",
         ];
     } catch (Exception $e) {
         logMessage("ERROR", "Exception getMataKuliahById: " . $e->getMessage());

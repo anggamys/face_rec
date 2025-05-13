@@ -13,7 +13,7 @@ $errorMessage = "";
 
 // Mode Edit
 if ($kode_kelas) {
-    $kelasResponse = getKelasById($kode_kelas);
+    $kelasResponse = getKelasByKodeKelas($kode_kelas);
     if (!isset($kelasResponse['success']) || !$kelasResponse['success']) {
         header("Location: kelas.php?error=notfound");
         exit;
