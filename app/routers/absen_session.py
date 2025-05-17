@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -14,11 +14,12 @@ router = APIRouter(
 
 @router.post("/open/{id_jadwal}", response_model=AbsenSessionResponse)
 def open_session(
+    background_tasks: BackgroundTasks,
     id_jadwal: int = Path(..., description="ID jadwal yang ingin dibuka sesi absensinya"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
-    return absen_session_service.open_absen_session(db, id_jadwal, current_user)
+    return absen_session_service.open_absen_session(db, id_jadwal, current_user, background_tasks)
 
 
 @router.post("/close/{id_jadwal}", response_model=AbsenSessionResponse)
