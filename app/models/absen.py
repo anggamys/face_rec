@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, BigInteger, ForeignKey, CheckConstraint, Enum
+from sqlalchemy import Column, Integer, BigInteger, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from app.database import Base
 import enum

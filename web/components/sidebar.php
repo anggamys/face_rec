@@ -53,6 +53,14 @@ $nav_items = [
         "role" => "mahasiswa",
     ],
     [
+        "label" => "Presensi",
+        "icon" => "bi-camera-video-fill",
+        "href" => "/absensi/absen-available.php",
+        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
+            "absen-available.php",
+        "role" => "mahasiswa",
+    ],
+    [
         "label" => "Profil",
         "icon" => "bi-person-lines-fill",
         "href" => "/profil.php",

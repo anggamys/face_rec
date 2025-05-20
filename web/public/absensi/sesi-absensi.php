@@ -69,36 +69,33 @@ include "../../components/header.php";
                                     <td>
                                         <?php
                                         $kelas = getKelasByKodeKelas($jadwal['kode_kelas']);
-                                        echo $kelas
+                                        echo $kelas && isset($kelas['data'])
                                             ? htmlspecialchars($kelas['data']['kode_kelas'] . " - " . $kelas['data']['nama_kelas'])
                                             : "<span class='text-danger'>Kelas tidak ditemukan</span>";
                                         ?>
                                     </td>
                                     <td><?= htmlspecialchars($jadwal['tanggal'] ?? '-') ?></td>
-                                    <td>
-                                        <?php
-                                        $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
-                                        $waktuMulai = $absensiSession['data']['waktu_mulai'] ?? null;
-                                        echo $waktuMulai ? formatTanggalIndonesia($waktuMulai) : '-';
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
-                                        $waktuSelesai = $absensiSession['data']['waktu_berakhir'] ?? null;
-                                        echo $waktuSelesai ? formatTanggalIndonesia($waktuSelesai) : '-';
-                                        ?>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
-                                        $isActive = $absensiSession && !empty($absensiSession['data']) && $absensiSession['data']['is_active'] == true;
-                                        ?>
 
-                                        <?php if ($isActive): ?>
+                                    <?php
+                                    $absensiSession = getAbsensiSessionByIdJadwal($jadwal['id_jadwal']);
+                                    $sessionData = $absensiSession['data'] ?? null;
+                                    ?>
+
+                                    <td>
+                                        <?= $sessionData && isset($sessionData['waktu_mulai'])
+                                            ? formatTanggalIndonesia($sessionData['waktu_mulai'])
+                                            : '-' ?>
+                                    </td>
+                                    <td>
+                                        <?= $sessionData && isset($sessionData['waktu_berakhir'])
+                                            ? formatTanggalIndonesia($sessionData['waktu_berakhir'])
+                                            : '-' ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($sessionData && $sessionData['is_active']): ?>
                                             <!-- Tombol Tutup Sesi -->
                                             <form method="POST" action="open-session.php" class="d-inline">
-                                                <input type="hidden" name="id_jadwal" value="<?= htmlspecialchars($jadwal['id_jadwal']) ?>">
+                                                <input type="hidden" name="id_session" value="<?= htmlspecialchars($sessionData['id_session']) ?>">
                                                 <input type="hidden" name="action" value="close">
                                                 <button type="submit" class="btn btn-sm btn-danger">
                                                     Tutup Sesi Absensi
@@ -126,3 +123,4 @@ include "../../components/header.php";
 </div>
 
 <?php include "../../components/footer.php"; ?>
+`
