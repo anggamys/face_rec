@@ -11,7 +11,7 @@ class AbsenCreate(AbsenBase):
 class AbsenResponse(BaseModel):
     id_absen: int
     id_jadwal: int
-    users_nrp: int
+    id_mahasiswa: int
     status: str
 
     class Config:

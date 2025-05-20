@@ -36,3 +36,14 @@ class UsersMahasiswa(BaseModel):
     email: EmailStr
     nrp: Optional[int] = None
     role: RoleEnum
+
+class UserResponse(BaseModel):
+    user_id: int
+    name: str
+    email: EmailStr
+    nrp: Optional[int] = None
+    nip: Optional[int] = None
+    role: RoleEnum
+
+    class Config:
+        orm_mode = True

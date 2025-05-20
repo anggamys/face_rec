@@ -1,8 +1,10 @@
 <?php
-session_start();
 
 require_once "../auth_check.php";
 require_once "../../action/absensi.php";
+require_once "../../action/jadwal.php";
+require_once "../../action/mata-kuliah.php";
+require_once "../../action/kelas.php";
 
 require_role("mahasiswa");
 
@@ -44,12 +46,23 @@ include "../../components/header.php";
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($absensi as $index => $data): ?>
+                            <?php
+                            $no = 1;
+                            foreach ($absensi as $data): ?>
+
+                                <?php
+                                $jadwal = getJadwalById($data["id_jadwal"] ?? null);
+
+                                $matakuliah = getMataKuliahById($jadwal["data"]["id_matkul"] ?? null);
+                                $kelas = getKelasByKodeKelas($jadwal["data"]["kode_kelas"] ?? null);
+
+                                ?>
+
                                 <tr>
-                                    <td><?= $index + 1 ?></td>
+                                    <td><?= $no++ ?></td>
                                     <td><?= htmlspecialchars($data["id_mahasiswa"] ?? "-") ?></td>
-                                    <td><?= htmlspecialchars($data["nama_matkul"] ?? "-") ?></td>
-                                    <td><?= htmlspecialchars($data["kode_kelas"] ?? "-") ?></td>
+                                    <td><?= htmlspecialchars($matakuliah['nama_matkul'] ?? "-") ?></td>
+                                    <td><?= htmlspecialchars($kelas['data']['nama_kelas'] ?? "-") ?></td>
                                     <td><?= htmlspecialchars($data["status"] ?? "-") ?></td>
                                 </tr>
                             <?php endforeach; ?>

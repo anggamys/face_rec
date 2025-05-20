@@ -1,9 +1,10 @@
 <?php
-session_start();
 
 require_once "../auth_check.php";
 require_once "../../action/absen-session.php";
 require_once "../../action/jadwal.php";
+require_once "../../action/mata-kuliah.php";
+require_once "../../action/kelas.php";
 
 require_role("mahasiswa");
 
@@ -44,17 +45,24 @@ include "../../components/header.php";
                                 <th>#</th>
                                 <th>Nama Matkul</th>
                                 <th>Kelas</th>
-                                <th>Jam Mulai</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($openSessions as $index => $session): ?>
+
+                                <?php
+                                $idJadwal = $session["id_jadwal"] ?? null;
+                                $jadwal = getJadwalById($idJadwal);
+
+                                $matakuliah = getMataKuliahById($jadwal["data"]["id_matkul"] ?? null);
+                                $kelas = getKelasByKodeKelas($jadwal["data"]["kode_kelas"] ?? null);
+                                ?>
+
                                 <tr>
                                     <td class="text-center"><?= $index + 1 ?></td>
-                                    <td><?= htmlspecialchars($session["id_jadwal"] ?? "-") ?></td>
-                                    <td><?= htmlspecialchars($session["tanggal"] ?? "-") ?></td>
-                                    <td><?= htmlspecialchars($session["waktu_mulai"] ?? "-") ?></td>
+                                    <td><?= htmlspecialchars($matakuliah['nama_matkul'] ?? "-") ?></td>
+                                    <td><?= htmlspecialchars($kelas['data']['nama_kelas'] ?? "-") ?></td>
                                     <td class="text-center">
                                         <a href="/absensi/absen.php?id_session=<?= htmlspecialchars($session["id_session"] ?? "-") ?>"
                                             class="btn btn-primary btn-sm">

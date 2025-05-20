@@ -16,3 +16,9 @@ def get_all_mahasiswa(db: Session) -> List[UsersMahasiswa]:
         ))
 
     return results
+
+def get_user_by_id(db: Session, user_id: int) -> User:
+    return db.query(User).filter(User.user_id == user_id).first()
+
+def get_user_by_nrp(db: Session, nrp: int) -> User:
+    return db.query(User).filter(User.nrp == nrp).first()

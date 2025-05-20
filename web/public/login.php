@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 require_once "../action/auth.php";
 
 $error = "";

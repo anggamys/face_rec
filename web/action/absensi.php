@@ -10,16 +10,18 @@ function getAllAbsensi()
     try {
         $response = sendRequest("GET", "$absensiurl/");
 
-        if ($response["success"]) {
-            return $response["data"];
+        if (is_array($response)) {
+            return $response;
         }
 
         return [
-            "error" => $response["error"] ?? "Gagal mengambil data absensi.",
+            "success" => false,
+            "error" => "Format data tidak valid dari API.",
         ];
     } catch (Exception $e) {
         logMessage("ERROR", "getAllAbsensi exception: " . $e->getMessage());
         return [
+            "success" => false,
             "error" => "Terjadi kesalahan saat mengambil data absensi. Coba lagi nanti.",
         ];
     }
@@ -36,16 +38,18 @@ function getRekapAbsensi()
     try {
         $response = sendRequest("GET", "$rekapabsensiurl/rekap-absen");
 
-        if ($response["success"]) {
-            return $response["data"];
+        if (is_array($response)) {
+            return $response;
         }
 
         return [
-            "error" => $response["error"] ?? "Gagal mengambil data rekap absensi.",
+            "success" => false,
+            "error" => "Gagal mengambil data rekap absensi.",
         ];
     } catch (Exception $e) {
         logMessage("ERROR", "getRekapAbsensi exception: " . $e->getMessage());
         return [
+            "success" => false,
             "error" => "Terjadi kesalahan saat mengambil data rekap absensi. Coba lagi nanti.",
         ];
     }

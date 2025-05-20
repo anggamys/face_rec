@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, matakuliah, kelas, jadwal, absen, mahasiswa, absen_session
+from app.routers import auth, matakuliah, kelas, jadwal, absen, mahasiswa, absen_session, user
 from app.database import Base, engine
 
 Base.metadata.create_all(bind=engine)
@@ -23,6 +23,7 @@ app.include_router(kelas.router)
 app.include_router(matakuliah.router)
 app.include_router(mahasiswa.router)
 app.include_router(absen_session.router)
+app.include_router(user.router)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

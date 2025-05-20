@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 $datauser = $_SESSION['user'] ?? null;
 

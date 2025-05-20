@@ -1,20 +1,17 @@
 <?php
-session_start();
 
 require_once "../auth_check.php";
 require_once "../../action/absensi.php";
+require_once "../../action/user.php";
 require_once "../../action/jadwal.php";
+require_once "../../action/kelas.php";
 require_once "../../action/mata-kuliah.php";
 
 require_role("dosen");
 
+// Get all absensi data
 $allAbsensi = getAllAbsensi();
-$allMataKuliah = getAllMataKuliah();
-$allJadwal = getAllJadwal();
-
-// Membuat array cepat untuk akses nama mata kuliah dan jadwal
-$mataKuliahArray = array_column($allMataKuliah, 'nama_matkul', 'id_matkul');
-$jadwalArray = array_column($allJadwal, 'kode_kelas', 'id_jadwal');
+$allAbsensi = $allAbsensi["data"] ?? [];
 
 include "../../components/header.php";
 ?>
@@ -24,7 +21,7 @@ include "../../components/header.php";
 
   <div class="content flex-grow-1 p-4">
     <div class="container">
-      <!-- Breadcrumb dengan ikon untuk navigasi yang lebih jelas -->
+      <!-- Breadcrumb with icons for clearer navigation -->
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
@@ -41,50 +38,70 @@ include "../../components/header.php";
         </a>
       </div>
 
-      <?php if (!empty($allAbsensi) && is_array($allAbsensi)): ?>
-        <div class="table-responsive shadow-sm rounded">
-          <table class="table table-bordered table-hover align-middle">
-            <thead class="table-light">
+      <div class="mt-4">
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead>
               <tr>
-                <th scope="col" style="width: 5%;">#</th>
-                <th scope="col" style="width: 20%;">ID Mahasiswa</th>
-                <th scope="col" style="width: 20%;">Mata Kuliah</th>
-                <th scope="col" style="width: 20%;">Jadwal</th>
-                <th scope="col" style="width: 20%;">Status</th>
+                <th scope="col">Nama Mahasiswa</th>
+                <th scope="col">Kelas</th>
+                <th scope="col">Mata Kuliah</th>
+                <th scope="col">Tanggal</th>
+                <th scope="col">Status</th>
+                <!-- <th scope="col">Aksi</th> -->
               </tr>
             </thead>
             <tbody>
-              <?php foreach ($allAbsensi as $index => $absensi): ?>
-                <tr>
-                  <td><?= $index + 1 ?></td>
-                  <td><?= htmlspecialchars($absensi["id_mahasiswa"] ?? "-") ?></td>
-                  <td><?= htmlspecialchars($mataKuliahArray[$absensi["id_matkul"]] ?? '-') ?></td>
-                  <td><?= htmlspecialchars($jadwalArray[$absensi["id_jadwal"]] ?? '-') ?></td>
-                  <td>
-                    <?php
-                    $status = $absensi["status"] ?? "-";
-                    $badgeClass = "bg-secondary";
-                    if ($status == "Hadir") {
-                      $badgeClass = "bg-success";
-                    } elseif ($status == "Tidak Hadir") {
-                      $badgeClass = "bg-danger";
-                    } elseif ($status == "Izin") {
-                      $badgeClass = "bg-warning text-dark";
-                    }
-                    ?>
-                    <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($status) ?></span>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
+              <?php if (!empty($allAbsensi)) : ?>
+                <?php foreach ($allAbsensi as $index => $absensi) : ?>
+                  <?php
+                  $idMahasiswa = $absensi['id_mahasiswa'] ?? null;
+                  $dataMahasiswa = $idMahasiswa ? getUserByNrp($idMahasiswa) : null;
+                  $namaMahasiswa = 'Tidak Diketahui';
+
+                  if (is_array($dataMahasiswa) && isset($dataMahasiswa['data']['name'])) {
+                    $namaMahasiswa = $dataMahasiswa['data']['name'];
+                  }
+
+                  $idJadwal = $absensi['id_jadwal'] ?? '-';
+                  $dataJadwal = $idJadwal ? getJadwalById($idJadwal) : null;
+
+                  $dataKelas = getKelasByKodeKelas($dataJadwal['data']['kode_kelas'] ?? null);
+
+                  $dataMataKuliah = getMataKuliahById($dataJadwal['data']['id_matkul'] ?? null);
+
+                  $status = ucfirst($absensi['status'] ?? 'Tidak Diketahui');
+
+                  $badgeClass = 'bg-secondary';
+                  if (strtolower($status) === 'hadir') {
+                    $badgeClass = 'bg-success';
+                  } elseif (strtolower($status) === 'alpha') {
+                    $badgeClass = 'bg-danger';
+                  }
+                  ?>
+                  <tr>
+                    <td><?= htmlspecialchars($namaMahasiswa) ?></td>
+                    <td><?= htmlspecialchars($dataKelas['data']['nama_kelas'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($dataMataKuliah['nama_matkul'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($dataJadwal['data']['tanggal'] ?? '-') ?></td>
+                    <td><span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($status) ?></span></td>
+                    <!-- <td>
+                      <a href="#" class="btn btn-sm btn-outline-info">Detail</a>
+                    </td> -->
+                  </tr>
+                <?php endforeach; ?>
+              <?php endif; ?>
             </tbody>
           </table>
+
+          <?php if (empty($allAbsensi)) : ?>
+            <div class="alert alert-warning mt-3" role="alert">
+              Belum ada data absensi.
+            </div>
+          <?php endif; ?>
         </div>
-      <?php else: ?>
-        <div class="alert alert-warning p-4" role="alert">
-          <h5 class="alert-heading"><i class="bi bi-exclamation-circle-fill me-2"></i> Tidak Ada Absensi</h5>
-          <p class="mb-0">Saat ini tidak ada data absensi. Untuk memulai, klik tombol "Buka Sesi Absensi" di atas untuk membuka sesi absensi baru.</p>
-        </div>
-      <?php endif; ?>
+      </div>
+
     </div>
   </div>
 </div>
