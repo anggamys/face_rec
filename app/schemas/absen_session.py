@@ -16,3 +16,7 @@ class AbsenSessionResponse(AbsenSessionBase):
 
     class Config:
         orm_mode = True
+
+class FaceRecognitionRequest(BaseModel):
+    id_session: int
+    base64_image: str

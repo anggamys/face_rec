@@ -1,169 +1,163 @@
+import os
+import io
 import cv2
 import torch
-import os
+import logging
 import numpy as np
 from PIL import Image
 from torchvision import transforms
 from facenet_pytorch import MTCNN, InceptionResnetV1
-import time
-import requests
-import threading
-from sqlalchemy.orm import Session
+
 from app.config import SessionLocal
+from app.schemas.absen import AbsenCreate
+from app.services import absen_service
+from app.models.user import User
 
-# Inisialisasi device, model, dan transformasi wajah
-device = torch.device("cuda" if torch.cuda.is_available() 
-                      else ("mps" if torch.backends.mps.is_available() else "cpu"))
-print("Device:", device)
+# ====================
+# CONFIGURATION
+# ====================
+logging.basicConfig(level=logging.INFO)
+device = torch.device(
+    "cuda" if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available()
+    else "cpu"
+)
+logging.info(f"[Face Recognition] Using device: {device}")
 
+# ====================
+# MODEL INITIALIZATION
+# ====================
 mtcnn = MTCNN(keep_all=True, device=device)
-face_encoder = InceptionResnetV1(pretrained='vggface2').eval().to(device)
-
+face_encoder = InceptionResnetV1(pretrained="vggface2").eval().to(device)
 transform = transforms.Compose([
     transforms.Resize((160, 160)),
     transforms.ToTensor()
 ])
 
-def get_face_embeddings(image):
-    """
-    Mendeteksi wajah dan mengembalikan list tuple (embedding, (x1, y1, x2, y2)).
-    """
-    if image is None:
-        return []
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    pil_image = Image.fromarray(image_rgb)
-    face_locations, _ = mtcnn.detect(pil_image)
-    results = []
-    if face_locations is not None:
-        for box in face_locations:
-            x1, y1, x2, y2 = map(int, box)
-            face = pil_image.crop((x1, y1, x2, y2))
-            face_tensor = transform(face).unsqueeze(0).to(device)
-            with torch.no_grad():
-                embedding = face_encoder(face_tensor).cpu().numpy().flatten()
-            results.append((embedding, (x1, y1, x2, y2)))
-    return results
+# ====================
+# UTILITIES
+# ====================
 
-def load_dataset(dataset_path):
-    """
-    Memuat dataset wajah, mengembalikan (encodings, names).
-    """
-    known_face_encodings = []
-    known_face_names = []
-    valid_extensions = ('.jpg', '.jpeg', '.png')
-    for person_name in os.listdir(dataset_path):
-        person_folder = os.path.join(dataset_path, person_name)
-        if os.path.isdir(person_folder):
-            for image_name in os.listdir(person_folder):
-                image_path = os.path.join(person_folder, image_name)
-                if not image_path.lower().endswith(valid_extensions):
-                    continue
-                image = cv2.imread(image_path)
-                if image is None:
-                    print(f"Error: Tidak bisa membaca {image_path}")
-                    continue
-                face_data = get_face_embeddings(image)
-                for (embedding, _) in face_data:
-                    known_face_encodings.append(embedding)
-                    known_face_names.append(person_name)
-    return np.array(known_face_encodings), np.array(known_face_names)
-
-def get_face_to_nrp_mapping():
-    """
-    Menghasilkan mapping nama ke nrp dengan query ke database.
-    Diasumsikan tabel users memiliki field 'nama' dan 'nrp' untuk mahasiswa.
-    """
-    mapping = {}
-    db: Session = SessionLocal()
+def get_face_embeddings(image: np.ndarray) -> list:
     try:
-        from app.models.user import User  # pastikan model User tersedia
-        mahasiswa = db.query(User).filter(User.role == "mahasiswa").all()
-        for mhs in mahasiswa:
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        pil_image = Image.fromarray(image_rgb)
+        face_boxes, _ = mtcnn.detect(pil_image)
+        
+        results = []
+        if face_boxes is not None:
+            for box in face_boxes:
+                x1, y1, x2, y2 = map(int, box)
+                face = pil_image.crop((x1, y1, x2, y2))
+                face_tensor = transform(face).unsqueeze(0).to(device)
+                with torch.no_grad():
+                    embedding = face_encoder(face_tensor).cpu().numpy().flatten()
+                results.append((embedding, (x1, y1, x2, y2)))
+        return results
+    except Exception as e:
+        logging.error(f"[Embedding Error] {e}")
+        return []
+
+
+def load_dataset(dataset_path: str) -> tuple:
+    encodings, names = [], []
+    for person in os.listdir(dataset_path):
+        person_dir = os.path.join(dataset_path, person)
+        if not os.path.isdir(person_dir):
+            continue
+
+        for img_file in os.listdir(person_dir):
+            if not img_file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                continue
+
+            img_path = os.path.join(person_dir, img_file)
+            image = cv2.imread(img_path)
+            if image is None:
+                continue
+
+            faces = get_face_embeddings(image)
+            for embedding, _ in faces:
+                encodings.append(embedding)
+                names.append(person)
+    
+    return np.array(encodings), np.array(names)
+
+
+def get_name_to_nrp_mapping() -> dict:
+    mapping = {}
+    db = SessionLocal()
+    try:
+        mahasiswa_list = db.query(User).filter(User.role == "mahasiswa").all()
+        for mhs in mahasiswa_list:
             mapping[mhs.name] = mhs.nrp
+    except Exception as e:
+        logging.error(f"[NRP Mapping Error] {e}")
     finally:
         db.close()
     return mapping
 
-def run_face_recognition(id_jadwal: int, id_matkul: int, dosen, stop_event: threading.Event):
-    dataset_path = "scripts/dataset"
-    known_face_encodings, known_face_names = load_dataset(dataset_path)
-    print(f"Jumlah wajah yang diketahui: {len(known_face_encodings)}")
+# ====================
+# MAIN LOGIC
+# ====================
 
-    face_to_nrp = get_face_to_nrp_mapping()
-    
+def recognize_and_absen_from_bytes(
+    image_bytes: bytes,
+    id_jadwal: int,
+) -> dict:
     THRESHOLD = 0.7
-    start_time = time.time()
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("Error: Kamera tidak dapat dibuka.")
-        return
 
-    detection_start_times = {}
-    absensi_sent = set()
+    try:
+        pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Gagal membaca gambar: {str(e)}"
+        }
 
-    from app.config import SessionLocal
-    from app.services import absen_service
-    from app.schemas.absen import AbsenCreate
+    frame = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    face_data = get_face_embeddings(frame)
+    
+    if not face_data:
+        return {
+            "success": False,
+            "message": "Tidak ada wajah terdeteksi."
+        }
 
-    while time.time() - start_time < 3600 and not stop_event.is_set():
-        ret, frame = cap.read()
-        if not ret:
-            continue
-        frame = cv2.flip(frame, 1)
-        face_data = get_face_embeddings(frame)
-        
-        detected_nrp_current = set()
-        
-        for (face_embedding, (x1, y1, x2, y2)) in face_data:
-            recognized_name = "Unknown"
-            if len(known_face_encodings) > 0:
-                distances = np.linalg.norm(known_face_encodings - face_embedding, axis=1)
-                best_match_index = np.argmin(distances)
-                if distances[best_match_index] < THRESHOLD:
-                    recognized_name = known_face_names[best_match_index]
-            
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, recognized_name, (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+    known_encodings, known_names = load_dataset("scripts/dataset")
+    name_to_nrp = get_name_to_nrp_mapping()
 
-            if recognized_name != "Unknown" and recognized_name in face_to_nrp:
-                nrp = face_to_nrp[recognized_name]
-                detected_nrp_current.add(nrp)
-                now = time.time()
-                if nrp not in detection_start_times:
-                    detection_start_times[nrp] = now
-                else:
-                    duration = now - detection_start_times[nrp]
-                    if duration >= 3 and nrp not in absensi_sent:
-                        absen_data = AbsenCreate(
-                            id_mahasiswa=nrp,
-                            status="hadir",
-                            detection_duration=int(duration)
-                        )
-                        db = SessionLocal()
-                        try:
-                            absen_service.create_absen(db, absen_data, id_matkul, id_jadwal)
-                            absensi_sent.add(nrp)
-                            print(f"Absensi terkirim untuk nrp {nrp} setelah terdeteksi selama {int(duration)} detik.")
-                        except Exception as e:
-                            print(f"Gagal mengirim absensi untuk nrp {nrp}: {e}")
-                        finally:
-                            db.close()
-        
-        nrp_yang_tidak_terdeteksi = set(detection_start_times.keys()) - detected_nrp_current
-        for nrp in nrp_yang_tidak_terdeteksi:
-            detection_start_times.pop(nrp)
-        
-        cv2.imshow('Face Recognition', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    for embedding, _ in face_data:
+        distances = np.linalg.norm(known_encodings - embedding, axis=1)
+        best_match_index = np.argmin(distances)
 
-    cap.release()
-    cv2.destroyAllWindows()
-    print("Proses face recognition selesai.")
+        if distances[best_match_index] < THRESHOLD:
+            matched_name = known_names[best_match_index]
+            nrp = name_to_nrp.get(matched_name)
 
-# Pastikan tidak ada kode eksekusi langsung di level modul.
-if __name__ == '__main__':
-    # Jika file dijalankan langsung, contoh eksekusi:
-    # Pastikan untuk mengganti parameter sesuai kondisi yang valid.
-    run_face_recognition(1, 1, None)
+            if nrp:
+                db = SessionLocal()
+                try:
+                    absen_data = AbsenCreate(
+                        users_nrp=nrp,
+                        id_jadwal=id_jadwal,
+                        status="hadir"
+                    )
+                    absen_service.create_absen(db, absen_data)
+                    return {
+                        "success": True,
+                        "nrp": nrp,
+                        "status": "hadir",
+                        "message": f"Absensi berhasil untuk {matched_name} ({nrp})"
+                    }
+                except Exception as e:
+                    return {
+                        "success": False,
+                        "message": f"Database error: {str(e)}"
+                    }
+                finally:
+                    db.close()
+
+    return {
+        "success": False,
+        "message": "Wajah dikenali, tetapi tidak ditemukan NRP-nya."
+    }

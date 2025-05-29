@@ -2,6 +2,7 @@
 session_start();
 
 require_once "../auth_check.php";
+require_once "../../action/mata-kuliah.php";
 require_once "../../action/jadwal.php";
 
 require_role("dosen");
@@ -42,35 +43,48 @@ include "../../components/header.php";
                                 <tr>
                                     <td><?= $i + 1 ?></td>
                                     <td><?= htmlspecialchars(
-                                        $jadwal["kode_kelas"] ?? "-"
-                                    ) ?></td>
+                                            $jadwal["kode_kelas"] ?? "-"
+                                        ) ?></td>
+                                    <td>
+                                        <?php
+
+                                        $matkul = getMataKuliahById(
+                                            $jadwal["id_matkul"]
+                                        );
+
+                                        if ($matkul !== null) {
+                                            echo htmlspecialchars(
+                                                $matkul["nama_matkul"]
+                                            );
+                                        } else {
+                                            echo "<span class='text-danger'>Mata kuliah tidak ditemukan</span>";
+                                        }
+                                        ?>
+                                    </td>
                                     <td><?= htmlspecialchars(
-                                        $jadwal["id_matkul"] ?? "-"
-                                    ) ?></td>
-                                    <td><?= htmlspecialchars(
-                                        $jadwal["week"] ?? "-"
-                                    ) ?></td>
+                                            $jadwal["week"] ?? "-"
+                                        ) ?></td>
                                     <td><?= !empty($jadwal["tanggal"])
-                                        ? date(
-                                            "d M Y",
-                                            strtotime($jadwal["tanggal"])
-                                        )
-                                        : "-" ?></td>
+                                            ? date(
+                                                "d M Y",
+                                                strtotime($jadwal["tanggal"])
+                                            )
+                                            : "-" ?></td>
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
                                             <a href="/jadwal/form_jadwal.php?id_jadwal=<?= urlencode(
-                                                $jadwal["id_jadwal"]
-                                            ) ?>"
-                                               class="btn btn-sm btn-outline-warning"
-                                               title="Edit Jadwal">
+                                                                                            $jadwal["id_jadwal"]
+                                                                                        ) ?>"
+                                                class="btn btn-sm btn-outline-warning"
+                                                title="Edit Jadwal">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <a href="/jadwal/delete_jadwal.php?id_jadwal=<?= urlencode(
-                                                $jadwal["id_jadwal"]
-                                            ) ?>"
-                                               class="btn btn-sm btn-outline-danger"
-                                               title="Hapus Jadwal"
-                                               onclick="return confirm('Yakin ingin menghapus jadwal ini?');">
+                                                                                                $jadwal["id_jadwal"]
+                                                                                            ) ?>"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Hapus Jadwal"
+                                                onclick="return confirm('Yakin ingin menghapus jadwal ini?');">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         </div>

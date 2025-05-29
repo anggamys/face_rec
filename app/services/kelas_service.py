@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from app.models.kelas import Kelas
 from app.models.user import User
 from app.models.matakuliah import Matakuliah
-from app.models.kelas_mahasiswa import kelas_mahasiswa
+from app.models.kelas_mahasiswa import KelasMahasiswa
 from app.models.kelas_matkul import kelas_matkul
 from app.schemas.kelas import KelasCreate, KelasUpdate
 from typing import List, Optional
@@ -34,7 +34,7 @@ def create_kelas(db: Session, kelas: KelasCreate) -> dict:
     db.refresh(new_kelas)
 
     db.bulk_save_objects([
-        kelas_mahasiswa(kode_kelas=new_kelas.kode_kelas, nrp_mahasiswa=m.nrp)
+        KelasMahasiswa(kode_kelas=new_kelas.kode_kelas, nrp_mahasiswa=m.nrp)
         for m in valid_mahasiswa
     ])
 
@@ -62,9 +62,9 @@ def create_kelas_mahasiswa(db: Session, kode_kelas: str, mahasiswa_ids: List[str
     valid_mahasiswa = validate_mahasiswa(db, mahasiswa_ids)
 
     for m in valid_mahasiswa:
-        exists = db.query(kelas_mahasiswa).filter_by(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp).first()
+        exists = db.query(KelasMahasiswa).filter_by(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp).first()
         if not exists:
-            db.add(kelas_mahasiswa(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp))
+            db.add(KelasMahasiswa(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp))
     db.commit()
     return True
 
@@ -88,7 +88,7 @@ def get_all_kelas(db: Session) -> List[dict]:
     kelas_list = db.query(Kelas).all()
     results = []
     for k in kelas_list:
-        mahasiswa = db.query(kelas_mahasiswa).filter_by(kode_kelas=k.kode_kelas).all()
+        mahasiswa = db.query(KelasMahasiswa).filter_by(kode_kelas=k.kode_kelas).all()
         matakuliah = db.query(kelas_matkul).filter_by(kode_kelas=k.kode_kelas).all()
         results.append({
             "id_kelas": k.id_kelas,
@@ -105,7 +105,7 @@ def get_kelas_by_kode(db: Session, kode_kelas: str) -> Optional[dict]:
     if not kelas:
         return None
 
-    mahasiswa = db.query(kelas_mahasiswa).filter_by(kode_kelas=kode_kelas).all()
+    mahasiswa = db.query(KelasMahasiswa).filter_by(kode_kelas=kode_kelas).all()
     matakuliah = db.query(kelas_matkul).filter_by(kode_kelas=kode_kelas).all()
 
     return {
@@ -122,7 +122,7 @@ def get_kelas_by_matkul(db: Session, id_matkul: int) -> List[dict]:
     results = []
     for km in kelas_matkul_records:
         kelas = db.query(Kelas).filter_by(kode_kelas=km.kode_kelas).first()
-        mahasiswa = db.query(kelas_mahasiswa).filter_by(kode_kelas=kelas.kode_kelas).all()
+        mahasiswa = db.query(KelasMahasiswa).filter_by(kode_kelas=kelas.kode_kelas).all()
         results.append({
             "id_kelas": kelas.id_kelas,
             "kode_kelas": kelas.kode_kelas,
@@ -142,9 +142,9 @@ def update_kelas(db: Session, kode_kelas: str, kelas_update: KelasUpdate) -> Opt
 
     if kelas_update.mahasiswa:
         valid_mahasiswa = validate_mahasiswa(db, kelas_update.mahasiswa)
-        db.query(kelas_mahasiswa).filter_by(kode_kelas=kode_kelas).delete()
+        db.query(KelasMahasiswa).filter_by(kode_kelas=kode_kelas).delete()
         db.bulk_save_objects([
-            kelas_mahasiswa(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp) for m in valid_mahasiswa
+            KelasMahasiswa(kode_kelas=kode_kelas, nrp_mahasiswa=m.nrp) for m in valid_mahasiswa
         ])
 
     if kelas_update.matakuliah:
@@ -172,7 +172,7 @@ def delete_kelas(db: Session, kode_kelas: str) -> bool:
     if not kelas:
         return False
 
-    db.query(kelas_mahasiswa).filter_by(kode_kelas=kode_kelas).delete()
+    db.query(KelasMahasiswa).filter_by(kode_kelas=kode_kelas).delete()
     db.query(kelas_matkul).filter_by(kode_kelas=kode_kelas).delete()
     db.delete(kelas)
     db.commit()

@@ -12,7 +12,6 @@ if (!$user) {
 
 $role = $user["role"] ?? "guest";
 
-// Konfigurasi berdasarkan role
 if ($role === "mahasiswa") {
     $pageTitle = "Dashboard Mahasiswa";
     $currentPage = "dashboard-mahasiswa";

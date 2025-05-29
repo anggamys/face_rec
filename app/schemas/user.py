@@ -29,3 +29,21 @@ class UserOut(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class UsersMahasiswa(BaseModel):
+    user_id: int
+    name: str
+    email: EmailStr
+    nrp: Optional[int] = None
+    role: RoleEnum
+
+class UserResponse(BaseModel):
+    user_id: int
+    name: str
+    email: EmailStr
+    nrp: Optional[int] = None
+    nip: Optional[int] = None
+    role: RoleEnum
+
+    class Config:
+        orm_mode = True

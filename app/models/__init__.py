@@ -5,4 +5,4 @@ from .jadwal import Jadwal
 from .matakuliah import Matakuliah
 from .kelas_matkul import kelas_matkul
 from .absen_session import AbsenSession
-from .kelas_mahasiswa import kelas_mahasiswa
+from .kelas_mahasiswa import KelasMahasiswa

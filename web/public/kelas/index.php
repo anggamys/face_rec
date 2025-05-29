@@ -36,33 +36,23 @@ include "../../components/header.php";
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($kelasList as $index => $kelas): ?>
+                            <?php $i = 1;
+                            foreach ($kelasList as $kelas): ?>
                                 <tr>
-                                    <td class="text-center"><?= $index +
-                                                                1 ?></td>
-                                    <td><?= htmlspecialchars(
-                                            $kelas["nama_kelas"] ?? "-"
-                                        ) ?></td>
-                                    <td><?= htmlspecialchars(
-                                            $kelas["kode_kelas"] ?? "-"
-                                        ) ?></td>
+                                    <td class="text-center"><?= $i++ ?></td>
+                                    <td><?= htmlspecialchars($kelas["nama_kelas"] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($kelas["kode_kelas"] ?? '-') ?></td>
                                     <td class="text-center">
-                                        <?php if (
-                                            !empty($kelas["kode_kelas"])
-                                        ): ?>
-                                            <a href="/kelas/form_kelas.php?kode_kelas=<?= urlencode(
-                                                                                            $kelas["kode_kelas"]
-                                                                                        ) ?>"
-                                                class="btn btn-sm btn-outline-warning me-2" data-bs-toggle="tooltip" title="Edit Kelas" aria-label="Edit Kelas">
+                                        <?php if (!empty($kelas["kode_kelas"])): ?>
+                                            <a href="/kelas/form_kelas.php?kode_kelas=<?= urlencode($kelas["kode_kelas"]) ?>"
+                                                class="btn btn-sm btn-outline-warning me-2"
+                                                data-bs-toggle="tooltip" title="Edit Kelas" aria-label="Edit Kelas">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <a href="/kelas/delete_kelas.php?kode_kelas=<?= urlencode(
-                                                                                            $kelas["kode_kelas"]
-                                                                                        ) ?>"
-                                                class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Hapus Kelas" aria-label="Hapus Kelas"
-                                                onclick="return confirm('Apakah Anda yakin ingin menghapus kelas \" <?= htmlspecialchars(
-                                                                                                                        $kelas["nama_kelas"]
-                                                                                                                    ) ?>\"?');">
+                                            <a href="/kelas/delete_kelas.php?kode_kelas=<?= urlencode($kelas["kode_kelas"]) ?>"
+                                                class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="tooltip" title="Hapus Kelas" aria-label="Hapus Kelas"
+                                                onclick="return confirm('Apakah Anda yakin ingin menghapus kelas &quot;<?= htmlspecialchars($kelas["nama_kelas"] ?? '-') ?>&quot;?');">
                                                 <i class="bi bi-trash"></i>
                                             </a>
                                         <?php else: ?>

@@ -69,7 +69,7 @@ function getJadwalById($id_jadwal)
     global $jadwalurl;
 
     try {
-        $response = sendRequest("GET", "$jadwalurl/jadwal/$id_jadwal");
+        $response = sendRequest("GET", "$jadwalurl/$id_jadwal");
 
         if (!empty($response["success"])) {
             return [
@@ -98,11 +98,12 @@ function updateJadwal($id_jadwal, $kode_kelas, $id_matkul, $tanggal, $week)
     try {
         $data = [
             "kode_kelas" => $kode_kelas,
+            "id_matkul" => $id_matkul,
             "tanggal" => $tanggal,
             "week" => $week,
         ];
 
-        $response = sendRequest("PUT", "$jadwalurl/jadwal/$id_jadwal", $data);
+        $response = sendRequest("PUT", "$jadwalurl/$id_jadwal", $data);
 
         if (!empty($response["success"])) {
             return [

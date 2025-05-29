@@ -1,6 +1,6 @@
 # app/models/user.py
 import enum
-from app.models.kelas_mahasiswa import kelas_mahasiswa
+from app.models.kelas_mahasiswa import KelasMahasiswa
 from app.database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, BigInteger, String, Enum, CheckConstraint, Integer
@@ -27,4 +27,4 @@ class User(Base):
         ),
     )
 
-    kelas = relationship("Kelas", secondary=kelas_mahasiswa, back_populates="mahasiswa")
+    kelas = relationship("KelasMahasiswa", back_populates="user")  # Many-to-many via KelasMahasiswa

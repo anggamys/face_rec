@@ -1,12 +1,13 @@
 from pydantic import BaseModel
 
 class AbsenBase(BaseModel):
-    id_session: int  # Ini diasumsikan = id_jadwal
-    user_id: int
+    users_nrp: int
+    id_jadwal: int
+    detection_time: str | None = None  # Optional field for detection time
 
 class AbsenCreate(AbsenBase):
-    status: str      # status seperti 'hadir', 'izin', 'sakit'
-
+    status: str    
+    
 class AbsenResponse(BaseModel):
     id_absen: int
     id_jadwal: int
