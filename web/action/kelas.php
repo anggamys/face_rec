@@ -75,7 +75,7 @@ function getKelasByMatkul($id_matkul)
     }
 }
 
-function addKelas($kode_kelas, $nama_kelas, $id_matkul)
+function addKelas($kode_kelas, $nama_kelas, $id_matkul, $nrp_mahasiswa)
 {
     global $kelasurl;
 
@@ -83,7 +83,7 @@ function addKelas($kode_kelas, $nama_kelas, $id_matkul)
         $payload = [
             "kode_kelas" => $kode_kelas,
             "nama_kelas" => $nama_kelas,
-            "mahasiswa" => [],
+            "mahasiswa" => (array) $nrp_mahasiswa,
             "matakuliah" => (array) $id_matkul,
         ];
 
@@ -106,7 +106,7 @@ function addKelas($kode_kelas, $nama_kelas, $id_matkul)
     }
 }
 
-function updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul)
+function updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul, $nrp_mahasiswa)
 {
     global $kelasurl;
 
@@ -114,6 +114,7 @@ function updateKelas($kode_kelas, $kode_kelas_input, $nama_kelas, $id_matkul)
         $payload = [
             "kode_kelas" => $kode_kelas_input,
             "nama_kelas" => $nama_kelas,
+            "mahasiswa" => (array) $nrp_mahasiswa,
             "matakuliah" => (array) $id_matkul,
         ];
 

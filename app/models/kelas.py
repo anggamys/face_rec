@@ -2,7 +2,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import Base
-from app.models.kelas_mahasiswa import kelas_mahasiswa  # Import association table mahasiswa
+from app.models.kelas_mahasiswa import KelasMahasiswa  # Import association table mahasiswa
 from app.models.kelas_matkul import kelas_matkul        # Import association table matakuliah
 
 class Kelas(Base):
@@ -13,4 +13,4 @@ class Kelas(Base):
     nama_kelas = Column(String, nullable=False)
 
     matakuliah = relationship("Matakuliah", secondary=kelas_matkul, back_populates="kelas")
-    mahasiswa = relationship("User", secondary=kelas_mahasiswa, back_populates="kelas")
+    mahasiswa = relationship("KelasMahasiswa", back_populates="kelas")

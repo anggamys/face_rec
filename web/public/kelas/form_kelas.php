@@ -9,14 +9,17 @@ require_once "../../action/user.php";
 require_role("dosen");
 
 $kode_kelas = $_GET['kode_kelas'] ?? null;
-$kelas = null;
 $errorMessage = "";
+$kelas = null;
+$selectedMatkul = [];
+$selectedMahasiswa = [];
 
+// Ambil data awal
 $mataKuliahList = getAllMataKuliah();
 $fetchMahasiswa = getAllMahasiswa();
 $allMahasiswa = $fetchMahasiswa['data'] ?? [];
 
-// Mode Edit
+// Jika mode edit
 if ($kode_kelas) {
     $kelasResponse = getKelasByKodeKelas($kode_kelas);
     if (!isset($kelasResponse['success']) || !$kelasResponse['success']) {
@@ -24,6 +27,10 @@ if ($kode_kelas) {
         exit;
     }
     $kelas = $kelasResponse['data'] ?? null;
+
+    // Isi selected jika data kelas berhasil ditemukan
+    $selectedMatkul = array_map('strval', $kelas['matakuliah'] ?? []);
+    $selectedMahasiswa = array_map('strval', $kelas['mahasiswa'] ?? []);
 }
 
 // Handle Submit
@@ -34,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nrp_mahasiswa_array = $_POST['nrp_mahasiswa'] ?? [];
 
     if ($kode_kelas_input === '' || $nama_kelas === '' || empty($id_matkul_array)) {
-        $errorMessage = "Semua field wajib diisi, termasuk mata kuliah.";
+        $errorMessage = "Semua field wajib diisi, termasuk minimal satu mata kuliah.";
     } else {
         $id_matkul_payload = array_map('intval', (array) $id_matkul_array);
         $nrp_mahasiswa_payload = array_map('intval', (array) $nrp_mahasiswa_array);
@@ -45,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response = addKelas($kode_kelas_input, $nama_kelas, $id_matkul_payload, $nrp_mahasiswa_payload);
         }
 
-        if (isset($response['success']) && $response['success']) {
+        if (!empty($response['success'])) {
             $action = $kode_kelas ? "updated" : "created";
             header("Location: kelas.php?success=$action");
             exit;
@@ -54,9 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
-include "../../components/header.php";
 ?>
+<?php include "../../components/header.php"; ?>
 
 <div class="d-flex">
     <?php include "../../components/sidebar.php"; ?>
@@ -88,10 +94,8 @@ include "../../components/header.php";
                 <!-- Mata Kuliah -->
                 <div class="mb-3">
                     <label class="form-label">Mata Kuliah</label>
-                    <?php
-                    $selectedMatkul = array_column($kelas['matakuliah'] ?? [], 'id_matkul');
-                    foreach ($mataKuliahList as $matkul):
-                        $isChecked = in_array($matkul['id_matkul'], $selectedMatkul ?? []) ? 'checked' : '';
+                    <?php foreach ($mataKuliahList as $matkul):
+                        $isChecked = in_array((string) $matkul['id_matkul'], $selectedMatkul) ? 'checked' : '';
                     ?>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox"
@@ -109,19 +113,17 @@ include "../../components/header.php";
                 <!-- Mahasiswa -->
                 <div class="mb-3">
                     <label class="form-label">Mahasiswa</label>
-                    <?php
-                    $selectedMahasiswa = array_column($kelas['mahasiswa'] ?? [], 'nrp');
-                    foreach ($allMahasiswa as $mahasiswa):
-                        $isChecked = in_array($mahasiswa['nrp'], $selectedMahasiswa ?? []) ? 'checked' : '';
+                    <?php foreach ($allMahasiswa as $mahasiswa):
+                        $isChecked = in_array((string) $mahasiswa['nrp'], $selectedMahasiswa) ? 'checked' : '';
                     ?>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox"
                                 name="nrp_mahasiswa[]"
-                                id="mhs_<?= $mahasiswa['nrp'] ?>"
-                                value="<?= $mahasiswa['nrp'] ?>"
+                                id="mhs_<?= htmlspecialchars($mahasiswa['nrp']) ?>"
+                                value="<?= htmlspecialchars($mahasiswa['nrp']) ?>"
                                 <?= $isChecked ?>>
-                            <label class="form-check-label" for="mhs_<?= $mahasiswa['nrp'] ?>">
-                                <?= htmlspecialchars($mahasiswa['name']) ?> (<?= $mahasiswa['nrp'] ?>)
+                            <label class="form-check-label" for="mhs_<?= htmlspecialchars($mahasiswa['nrp']) ?>">
+                                <?= htmlspecialchars($mahasiswa['name']) ?> (<?= htmlspecialchars($mahasiswa['nrp']) ?>)
                             </label>
                         </div>
                     <?php endforeach; ?>
