@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 require_once "./auth_check.php";
 
 $user = $_SESSION["user"] ?? null;
@@ -10,7 +12,6 @@ if (!$user) {
 
 $role = $user["role"] ?? "guest";
 
-// Konfigurasi berdasarkan role
 if ($role === "mahasiswa") {
     $pageTitle = "Dashboard Mahasiswa";
     $currentPage = "dashboard-mahasiswa";

@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 require_once "../../libs/helper.php";
 require_once "../../action/kelas.php";

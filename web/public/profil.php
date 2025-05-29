@@ -1,4 +1,6 @@
 <?php
+session_start();
+require_once "../action/auth.php";
 
 $datauser = $_SESSION['user'] ?? null;
 
