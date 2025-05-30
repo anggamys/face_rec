@@ -2,9 +2,11 @@ import os
 import io
 import cv2
 import torch
+import time
 import logging
 import numpy as np
 from PIL import Image
+from collections import defaultdict
 from torchvision import transforms
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
@@ -13,9 +15,6 @@ from app.schemas.absen import AbsenCreate
 from app.services import absen_service
 from app.models.user import User
 
-# ====================
-# CONFIGURATION
-# ====================
 logging.basicConfig(level=logging.INFO)
 device = torch.device(
     "cuda" if torch.cuda.is_available()
@@ -24,9 +23,6 @@ device = torch.device(
 )
 logging.info(f"[Face Recognition] Using device: {device}")
 
-# ====================
-# MODEL INITIALIZATION
-# ====================
 mtcnn = MTCNN(keep_all=True, device=device)
 face_encoder = InceptionResnetV1(pretrained="vggface2").eval().to(device)
 transform = transforms.Compose([
@@ -34,16 +30,16 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
-# ====================
-# UTILITIES
-# ====================
+# Cache: {id_jadwal: {nrp: last_seen_time}}
+last_seen_faces = defaultdict(dict)
+ABSEN_TIMEOUT_SECONDS = 60
 
 def get_face_embeddings(image: np.ndarray) -> list:
     try:
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(image_rgb)
         face_boxes, _ = mtcnn.detect(pil_image)
-        
+
         results = []
         if face_boxes is not None:
             for box in face_boxes:
@@ -57,7 +53,6 @@ def get_face_embeddings(image: np.ndarray) -> list:
     except Exception as e:
         logging.error(f"[Embedding Error] {e}")
         return []
-
 
 def load_dataset(dataset_path: str) -> tuple:
     encodings, names = [], []
@@ -79,9 +74,8 @@ def load_dataset(dataset_path: str) -> tuple:
             for embedding, _ in faces:
                 encodings.append(embedding)
                 names.append(person)
-    
-    return np.array(encodings), np.array(names)
 
+    return np.array(encodings), np.array(names)
 
 def get_name_to_nrp_mapping() -> dict:
     mapping = {}
@@ -95,10 +89,6 @@ def get_name_to_nrp_mapping() -> dict:
     finally:
         db.close()
     return mapping
-
-# ====================
-# MAIN LOGIC
-# ====================
 
 def recognize_and_absen_from_bytes(
     image_bytes: bytes,
@@ -116,7 +106,7 @@ def recognize_and_absen_from_bytes(
 
     frame = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
     face_data = get_face_embeddings(frame)
-    
+
     if not face_data:
         return {
             "success": False,
@@ -135,6 +125,17 @@ def recognize_and_absen_from_bytes(
             nrp = name_to_nrp.get(matched_name)
 
             if nrp:
+                now = time.time()
+                if nrp in last_seen_faces[id_jadwal]:
+                    last_seen = last_seen_faces[id_jadwal][nrp]
+                    if now - last_seen < ABSEN_TIMEOUT_SECONDS:
+                        return {
+                            "success": True,
+                            "nrp": nrp,
+                            "status": "hadir",
+                            "message": f"{matched_name} ({nrp}) sudah terdeteksi sebelumnya, diabaikan."
+                        }
+
                 db = SessionLocal()
                 try:
                     absen_data = AbsenCreate(
@@ -143,6 +144,7 @@ def recognize_and_absen_from_bytes(
                         status="hadir"
                     )
                     absen_service.create_absen(db, absen_data)
+                    last_seen_faces[id_jadwal][nrp] = now
                     return {
                         "success": True,
                         "nrp": nrp,

@@ -1,29 +1,23 @@
 <?php
 session_start();
 require_once "../auth_check.php";
-include "../../components/header.php";
+
+require_role("dosen");
 ?>
+
+<?php include "../../components/header.php"; ?>
 
 <div class="d-flex">
     <?php include "../../components/sidebar.php"; ?>
 
     <div class="content flex-grow-1 p-4 d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-        <div class="text-center">
-            <h2 class="mb-4">📷 Ambil Foto Kamera</h2>
+        <div class="container text-center mt-5">
+            <h2 class="mb-4">📷 Realtime Face Recognition</h2>
 
-            <div style="max-width: 100%; width: 480px;">
-                <video id="video" autoplay class="rounded w-100"></video>
-            </div>
-
-            <div class="mt-3">
-                <button id="captureBtn" class="btn btn-primary">
-                    <i class="bi bi-camera"></i> Ambil Foto
-                </button>
-            </div>
+            <video id="video" autoplay muted></video>
+            <canvas id="canvas" width="480" height="360" style="display: none;"></canvas>
 
             <div id="status" class="alert mt-3 d-none" role="alert"></div>
-
-            <canvas id="canvas" width="480" height="360" style="display:none;"></canvas>
         </div>
     </div>
 </div>
@@ -32,14 +26,15 @@ include "../../components/header.php";
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const captureBtn = document.getElementById('captureBtn');
     const statusBox = document.getElementById('status');
 
-    // Ambil ID sesi dari URL
     const urlParams = new URLSearchParams(window.location.search);
     const idSession = urlParams.get('id_session');
 
-    // Akses kamera
+    let isProcessing = false;
+    let lastDetected = null;
+    let retryCount = 0;
+
     navigator.mediaDevices.getUserMedia({
             video: true
         })
@@ -50,41 +45,52 @@ include "../../components/header.php";
             setStatus("❌ Gagal akses kamera: " + err, "danger");
         });
 
-    captureBtn.addEventListener('click', () => {
-        setStatus("⏳ Mengunggah foto...", "info");
-
-        // Ambil gambar dari video
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Ubah ke blob
-        canvas.toBlob(blob => {
-            const formData = new FormData();
-            formData.append('id_session', idSession);
-            formData.append('image', blob, 'frame.jpg');
-
-            fetch('http://localhost:8000/absen-session/face-recognition', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        setStatus("✅ " + data.message, "success");
-                    } else {
-                        setStatus("❌ " + data.message, "danger");
-                    }
-                })
-                .catch(err => {
-                    setStatus("❌ Gagal upload: " + err, "danger");
-                });
-        }, 'image/jpeg');
-    });
-
     function setStatus(message, type) {
         statusBox.className = `alert alert-${type} mt-3`;
         statusBox.innerText = message;
         statusBox.classList.remove('d-none');
     }
+
+    async function sendFrame() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        try {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+
+            const formData = new FormData();
+            formData.append('id_session', idSession);
+            formData.append('image', blob, 'frame.jpg');
+
+            const response = await fetch('http://localhost:8000/absen-session/face-recognition', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (lastDetected !== data.nrp) {
+                    setStatus("✅ " + data.message, "success");
+                    lastDetected = data.nrp;
+                    retryCount = 0;
+                }
+            } else {
+                retryCount++;
+                if (retryCount >= 3) {
+                    setStatus("⚠️ " + data.message, "warning");
+                    retryCount = 0;
+                }
+            }
+        } catch (err) {
+            setStatus("❌ Error: " + err.message, "danger");
+        } finally {
+            isProcessing = false;
+        }
+    }
+
+    setInterval(sendFrame, 2000);
 </script>
 
 <?php include "../../components/footer.php"; ?>

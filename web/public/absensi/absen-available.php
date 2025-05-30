@@ -7,18 +7,15 @@ require_once "../../action/jadwal.php";
 require_once "../../action/mata-kuliah.php";
 require_once "../../action/kelas.php";
 
-require_role("mahasiswa");
+require_role("dosen");
 
-// Ambil semua sesi absensi
 $response = getAllAbsensiSession();
 $sessionData = $response["data"] ?? [];
 
-// Filter hanya sesi yang aktif
 $openSessions = array_filter($sessionData, function ($session) {
     return isset($session['is_active']) && $session['is_active'] === true;
 });
 
-// Reset index array
 $openSessions = array_values($openSessions);
 
 include "../../components/header.php";

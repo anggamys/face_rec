@@ -1,71 +1,68 @@
 <?php
 $user = $_SESSION["user"] ?? null;
 
+// Utility untuk cek aktif berdasarkan URL
+function is_active_path(string $pathSegment, bool $exact = false): bool
+{
+    $uri = $_SERVER["REQUEST_URI"];
+    return $exact ? basename(parse_url($uri, PHP_URL_PATH)) === $pathSegment : strpos($uri, $pathSegment) !== false;
+}
+
 $nav_items = [
     [
         "label" => "Dashboard",
         "icon" => "bi-house-door-fill",
         "href" => "/dashboard.php",
-        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
-            "dashboard.php",
+        "active_check" => fn() => is_active_path("dashboard.php", true),
         "role" => null,
     ],
     [
         "label" => "Mata Kuliah",
         "icon" => "bi-book",
         "href" => "/mata-kuliah",
-        "active_check" => fn() => strpos(
-            $_SERVER["REQUEST_URI"],
-            "/mata-kuliah"
-        ) !== false,
+        "active_check" => fn() => is_active_path("/mata-kuliah"),
         "role" => "dosen",
     ],
     [
         "label" => "Kelas",
         "icon" => "bi-journal-text",
         "href" => "/kelas",
-        "active_check" => fn() => strpos($_SERVER["REQUEST_URI"], "/kelas") !==
-            false,
+        "active_check" => fn() => is_active_path("/kelas"),
         "role" => "dosen",
     ],
     [
         "label" => "Jadwal",
         "icon" => "bi-calendar-check",
         "href" => "/jadwal",
-        "active_check" => fn() => strpos($_SERVER["REQUEST_URI"], "/jadwal") !==
-            false,
+        "active_check" => fn() => is_active_path("/jadwal"),
         "role" => "dosen",
     ],
     [
         "label" => "Absensi",
         "icon" => "bi-clipboard-check",
         "href" => "/absensi",
-        "active_check" => fn() => strpos($_SERVER["REQUEST_URI"], "/absensi") !==
-            false,
+        "active_check" => fn() => is_active_path("/absensi") && !is_active_path("riwayat-absensi.php") && !is_active_path("absen-available.php"),
         "role" => "dosen",
     ],
     [
         "label" => "Riwayat Absensi",
         "icon" => "bi-clock-history",
         "href" => "/absensi/riwayat-absensi.php",
-        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
-            "riwayat-absensi.php",
+        "active_check" => fn() => is_active_path("riwayat-absensi.php", true),
         "role" => "mahasiswa",
     ],
     [
         "label" => "Presensi",
         "icon" => "bi-camera-video-fill",
         "href" => "/absensi/absen-available.php",
-        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
-            "absen-available.php",
-        "role" => "mahasiswa",
+        "active_check" => fn() => is_active_path("absen-available.php", true),
+        "role" => "dosen",
     ],
     [
         "label" => "Profil",
         "icon" => "bi-person-lines-fill",
         "href" => "/profil.php",
-        "active_check" => fn() => basename($_SERVER["PHP_SELF"]) ===
-            "profil.php",
+        "active_check" => fn() => is_active_path("profil.php", true),
         "role" => null,
     ]
 ];
